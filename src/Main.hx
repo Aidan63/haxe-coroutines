@@ -1,19 +1,18 @@
+import haxe.Exception;
 import Coroutine;
 import sys.thread.Thread;
-
-typedef Continuation<T> = T->Void;
 
 @:build(Macro.build())
 class Main {
 	// some async API
 	static var nextNumber = 0;
-	static function getNumber(cb:Int->Void) cb(++nextNumber);
+	static function getNumber(cb:Continuation<Int>) cb(++nextNumber, null);
 	// static function getNumberPromise() return new Promise((resolve,_) -> getNumber(resolve));
 
 	// known (hard-coded for now) suspending functions
-	inline static function await<T>(f:(T->Void)->Void, cont:Continuation<T>):CoroutineResult {
+	inline static function await<T>(func:(cont:Continuation<T>)->Void, cont:Continuation<T>):CoroutineResult {
 		Thread.current().events.run(() -> {
-			f(cont);
+			func(cont);
 		});
 
 		return Suspended;
@@ -23,7 +22,7 @@ class Main {
 	// 	p.then(cont);
 
 	static function test(n:Int, cont:Continuation<String>):Void
-		cont('hi $n times');
+		cont('hi $n times', null);
 
 	@:suspend static function someAsync():Int {
 		trace("hi");
@@ -52,8 +51,8 @@ class Main {
 	// }
 
 	static function main() {
-		var coro = someAsync(result -> trace("Result: " + result));
-		coro(null); // start
+		var coro = someAsync((result, error) -> trace("Result: " + result));
+		coro(0, null); // start
 
 		// for (v in new Gen(fibonacci)) {
 		// 	trace(v);

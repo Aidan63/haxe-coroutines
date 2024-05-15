@@ -1,15 +1,17 @@
 import sys.thread.Thread;
-import Main.Continuation;
+import haxe.Exception;
 
-class Coroutine {
-    public static function suspend<T>(f:(T->Void)->Void, cont:Continuation<T>):CoroutineResult {
-        Thread.current().events.run(() -> {
-			f(cont);
-		});
+typedef Continuation<T> = (result:T, error:Exception)->Void;
 
-		return Suspended;
-    }
-}
+// class Coroutine {
+//     public static function suspend<T>(f:(T->Void)->Void, cont:Continuation<T>):CoroutineResult {
+//         Thread.current().events.run(() -> {
+// 			f(cont);
+// 		});
+
+// 		return Suspended;
+//     }
+// }
 
 enum CoroutineResult {
     Suspended;

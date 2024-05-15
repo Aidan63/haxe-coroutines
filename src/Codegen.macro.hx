@@ -23,9 +23,9 @@ function doTransform(fun:Function, pos:Position):Function {
     var cfg = FlowGraph.build(fun);
 
     var coroExpr = if (cfg.hasSuspend) {
-        buildStateMachine(cfg.root, fun.expr.pos);
+        buildStateMachine(cfg.root, fun.expr.pos, returnCT);
     } else {
-        buildStateMachine(cfg.root, fun.expr.pos);
+        buildStateMachine(cfg.root, fun.expr.pos, returnCT);
         // buildSimpleCPS(cfg.root, fun.expr.pos);
     }
 
@@ -33,14 +33,19 @@ function doTransform(fun:Function, pos:Position):Function {
 
     return {
         args: coroArgs,
-        ret: macro : Continuation<Any>,
+        ret: macro : Continuation<$returnCT>,
         expr: coroExpr
     };
 }
 
-function buildStateMachine(bbRoot:BasicBlock, pos:Position):Expr {
-    var cases = new Array<Case>();
-    var varDecls = [];
+function buildStateMachine(bbRoot:BasicBlock, pos:Position, ret:ComplexType):Expr {
+    final cases      = new Array<Case>();
+    final varDecls   = [];
+    final defaultVal = switch ret.toString() {
+        case 'Int', 'Float': macro 0;
+        case 'Bool': macro false;
+        case _: macro null;
+    }
 
     function loop(bb:BasicBlock) {
         var exprs = [];
@@ -55,7 +60,7 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position):Expr {
 
                 exprs.push(macro {
                     __state = -1;
-                    __continuation($last);
+                    __continuation($last, null);
                     return Coroutine.CoroutineResult.Success($last);
                 });
 
@@ -63,7 +68,7 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position):Expr {
                 for (e in bb.elements) exprs.push(e);
                 exprs.push(macro {
                     __state = -1;
-                    __continuation(null);
+                    __continuation($defaultVal, null);
                     return;
                 });
 
@@ -157,9 +162,19 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position):Expr {
 
     return macro {
         var __state = 0;
-        ${{pos: pos, expr: EVars(varDecls)}};
-        function __stateMachine(__result:Dynamic):Coroutine.CoroutineResult {
-            do $eswitch while (true);
+        ${ {pos: pos, expr: EVars(varDecls)} };
+        function __stateMachine(__result:$ret, __error:haxe.Exception):Coroutine.CoroutineResult {
+            try {
+                while (true) {
+                    $eswitch;
+                }
+            } catch (exn) {
+                __state = -1;
+
+                __continuation($defaultVal, exn);
+
+                return Error(exn);
+            }
         }
         // __stateMachine(null);
         return __stateMachine;
