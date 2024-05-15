@@ -1,40 +1,25 @@
+import sys.thread.Thread;
 import haxe.Exception;
 import Coroutine;
-import sys.thread.Thread;
 
 @:build(Macro.build())
 class Main {
-	// some async API
 	static var nextNumber = 0;
-	static function getNumber(cb:Continuation<Int>) cb(++nextNumber, null);
-	// static function getNumberPromise() return new Promise((resolve,_) -> getNumber(resolve));
 
-	// known (hard-coded for now) suspending functions
-	inline static function await<T>(func:(cont:Continuation<T>)->Void, cont:Continuation<T>):CoroutineResult {
-		Thread.current().events.run(() -> {
-			func(cont);
+	@:suspend static function getNumber():Int {
+		return Coroutine.suspend(cont -> {
+			cont(++nextNumber, null);
 		});
-
-		return Suspended;
 	}
-
-	// inline static function awaitPromise<T>(p:Promise<T>, cont:Continuation<T>):Void
-	// 	p.then(cont);
-
-	static function test(n:Int, cont:Continuation<String>):Void
-		cont('hi $n times', null);
 
 	@:suspend static function someAsync():Int {
 		trace("hi");
-		while (await(getNumber) < 10) {
+		while (getNumber() < 10) {
 			trace('wait for it...');
 
-			trace(await(getNumber));
-
-			// var promise = getNumberPromise();
-			// trace(awaitPromise(promise));
+			trace(getNumber());
 		}
-		throw "bye";
+		// throw 'bye';
 		return 15;
 	}
 
@@ -51,8 +36,37 @@ class Main {
 	// }
 
 	static function main() {
-		var coro = someAsync((result, error) -> trace(result, error));
-		coro(0, null); // start
+		var running = true;
+		var result  = 0;
+		var error   = null;
+
+		var coro    = someAsync((v, exn) -> {
+			running = false;
+
+			if (exn != null) {
+				error = exn;
+			} else {
+				result = v;
+			}
+
+			return null;
+		});
+		switch coro(0, null) {
+			case Suspended:
+				while (running) {
+					Thread.current().events.progress();
+				}
+
+				if (error != null) {
+					throw error;
+				} else {
+					trace(result);
+				}
+			case Success(v):
+				trace(v);
+			case Error(exn):
+				throw exn;
+		}
 
 		// for (v in new Gen(fibonacci)) {
 		// 	trace(v);

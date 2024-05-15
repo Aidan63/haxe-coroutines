@@ -3,6 +3,7 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 using haxe.macro.Tools;
+using Lambda;
 
 enum Edge {
 	Final;
@@ -71,11 +72,16 @@ class LoopContext {
 class FlowGraph {
 	static var fakeValue = macro null;
 
-	static function isSuspendingFunction(name)
+	public static var found:Array<String> = [];
+
+	static function isSuspendingFunction(name:String):Bool {
 		return switch name {
-			case "await" | "awaitPromise" | "test" | "yield": true;
-			case _: false;
+			case "suspend":
+				true;
+			case _:
+				found.exists(n -> n == name);
 		}
+	}
 
 	public var hasSuspend(default,null) = false;
 	var nextBlockId = 0;
@@ -106,7 +112,7 @@ class FlowGraph {
 					bb = blockElement(bb, e);
 				bb;
 
-			case EConst(_) | EField(_, _) |  ECall(_,_) | EBinop(_, _, _) | EUnop(_, _, _) | EParenthesis(_) | EArray(_, _) | EArrayDecl(_) | ECast(_, _) | ECheckType(_, _) | EObjectDecl(_) | ENew(_, _):
+			case EFunction(_, _) | EConst(_) | EField(_, _) |  ECall(_,_) | EBinop(_, _, _) | EUnop(_, _, _) | EParenthesis(_) | EArray(_, _) | EArrayDecl(_) | ECast(_, _) | ECheckType(_, _) | EObjectDecl(_) | ENew(_, _):
 				var r = value(bb, e);
 				r.bb.addElement(r.e);
 				r.bb;
@@ -201,7 +207,7 @@ class FlowGraph {
 				}
 				bbNext;
 
-			case EDisplay(_,_) | EFor(_,_) | EFunction(_,_) | ESwitch(_,_,_) | ETry(_,_) | EUntyped(_) | EWhile(_,_,_):
+			case EDisplay(_,_) | EFor(_,_) | ESwitch(_,_,_) | ETry(_,_) | EUntyped(_) | EWhile(_,_,_):
 				throw new Error('${e.expr.getName()} not implemented', e.pos);
 		}
 	}
@@ -210,7 +216,7 @@ class FlowGraph {
 
 	function value(bb:BasicBlock, e:Expr):{bb:BasicBlock, e:Expr} {
 		return switch e.expr {
-			case EConst(_) | EBlock([]) | EIs(_, _):
+			case EConst(_) | EBlock([]) | EIs(_, _) | EFunction(_, _):
 				{bb: bb, e: e};
 
 			case EBlock(el):
@@ -344,7 +350,7 @@ class FlowGraph {
 
 				{bb: bbNext, e: macro $i{tmpVarName}};
 
-			case EFunction(_,_) | ESwitch(_,_,_) | EThrow(_) | ETry(_,_) | EUntyped(_):
+			case ESwitch(_,_,_) | EThrow(_) | ETry(_,_) | EUntyped(_):
 				throw new Error('${e.expr.getName()} not implemented', e.pos);
 		}
 	}
@@ -361,7 +367,7 @@ class FlowGraph {
 		}];
 
 		return switch eobj.expr {
-			case EConst(CIdent(name)) if (isSuspendingFunction(name)): // any suspending function, actually
+			case EConst(CIdent(name)), EField(_, name, _) if (isSuspendingFunction(name)): // any suspending function, actually
 				hasSuspend = true;
 				var tmpVarName = "tmp" + (tmpVarId++);
 				bb.declareVar(tmpVarName, null);

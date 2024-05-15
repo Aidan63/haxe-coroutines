@@ -13,13 +13,14 @@ using haxe.macro.ComplexTypeTools;
 //     }
 // }
 
-function doTransform(fun:Function, pos:Position):Function {
+function doTransform(fun:Function, pos:Position, found:Array<String>):Function {
     var returnCT = if (fun.ret != null) fun.ret else throw new Error("Return type hint expected", pos);
     if (returnCT.toString() == "Void") returnCT = macro : Dynamic;
 
     var coroArgs = fun.args.copy();
     coroArgs.push({name: "__continuation", type: macro : Continuation<$returnCT>});
 
+    FlowGraph.found = found;
     var cfg = FlowGraph.build(fun);
 
     var coroExpr = if (cfg.hasSuspend) {
@@ -29,7 +30,7 @@ function doTransform(fun:Function, pos:Position):Function {
         // buildSimpleCPS(cfg.root, fun.expr.pos);
     }
 
-    trace(coroExpr.toString());
+    // trace(coroExpr.toString());
 
     return {
         args: coroArgs,
@@ -89,13 +90,13 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, ret:ComplexType):Exp
 
                 exprs.push(macro {
                     __state = $v{bbNext.id};
-                    switch ($ef($a{args})) {
+                    switch ($ef($a{args})($defaultVal, null)) {
                         case Suspended:
                             return Coroutine.CoroutineResult.Suspended;
                         case Success(v):
                             return Coroutine.CoroutineResult.Success(v);
-                        case other:
-                            throw other;
+                        case Error(exn):
+                            throw exn;
                     }
                 });
                 loop(bbNext);

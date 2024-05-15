@@ -1,17 +1,19 @@
 import sys.thread.Thread;
 import haxe.Exception;
 
-typedef Continuation<T> = (result:T, error:Exception)->Void;
+typedef Continuation<T> = (result:T, error:Exception)->CoroutineResult;
 
-// class Coroutine {
-//     public static function suspend<T>(f:(T->Void)->Void, cont:Continuation<T>):CoroutineResult {
-//         Thread.current().events.run(() -> {
-// 			f(cont);
-// 		});
-
-// 		return Suspended;
-//     }
-// }
+class Coroutine {
+    @:suspend public static function suspend<T>(func:(Continuation<T>)->Void, cont:Continuation<T>):Continuation<T> {
+		return function (_, _):CoroutineResult {
+			Thread.current().events.run(() -> {
+				func(cont);
+			});
+	
+			return Suspended;
+		}
+    }
+}
 
 enum CoroutineResult {
     Suspended;
