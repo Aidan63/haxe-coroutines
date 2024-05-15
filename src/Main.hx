@@ -34,7 +34,7 @@ class Main {
 			// var promise = getNumberPromise();
 			// trace(awaitPromise(promise));
 		}
-		trace("bye");
+		throw "bye";
 		return 15;
 	}
 
@@ -51,7 +51,7 @@ class Main {
 	// }
 
 	static function main() {
-		var coro = someAsync((result, error) -> trace("Result: " + result));
+		var coro = someAsync((result, error) -> trace(result, error));
 		coro(0, null); // start
 
 		// for (v in new Gen(fibonacci)) {

@@ -16,6 +16,7 @@ enum Edge {
 	IfThen(bbThen:BasicBlock, bbNext:BasicBlock);
 	IfThenElse(bbThen:BasicBlock, bbElse:BasicBlock, bbNext:BasicBlock);
 	Return;
+	Throw;
 }
 
 class BasicBlock {
@@ -135,6 +136,13 @@ class FlowGraph {
 				}
 				bbUnreachable;
 
+			case EThrow(e):
+				var r = value(bb, e);
+				r.bb.setEdge(Throw);
+				r.bb.addElement(r.e);
+
+				bbUnreachable;
+
 			case EWhile(econd, ebody, true):
 				var bbHead = createBlock();
 
@@ -193,7 +201,7 @@ class FlowGraph {
 				}
 				bbNext;
 
-			case EDisplay(_,_) | EFor(_,_) | EFunction(_,_) | ESwitch(_,_,_) | EThrow(_) | ETry(_,_) | EUntyped(_) | EWhile(_,_,_):
+			case EDisplay(_,_) | EFor(_,_) | EFunction(_,_) | ESwitch(_,_,_) | ETry(_,_) | EUntyped(_) | EWhile(_,_,_):
 				throw new Error('${e.expr.getName()} not implemented', e.pos);
 		}
 	}

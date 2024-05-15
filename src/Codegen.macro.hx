@@ -64,6 +64,16 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, ret:ComplexType):Exp
                     return Coroutine.CoroutineResult.Success($last);
                 });
 
+            case Throw:
+                var last = bb.elements[bb.elements.length - 1];
+                for (i in 0...bb.elements.length - 1)
+                    exprs.push(bb.elements[i]);
+
+                exprs.push(macro {
+                    __state = -1;
+                    throw $last;
+                });
+
             case Final:
                 for (e in bb.elements) exprs.push(e);
                 exprs.push(macro {
@@ -82,8 +92,10 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, ret:ComplexType):Exp
                     switch ($ef($a{args})) {
                         case Suspended:
                             return Coroutine.CoroutineResult.Suspended;
+                        case Success(v):
+                            return Coroutine.CoroutineResult.Success(v);
                         case other:
-                            return other;
+                            throw other;
                     }
                 });
                 loop(bbNext);
