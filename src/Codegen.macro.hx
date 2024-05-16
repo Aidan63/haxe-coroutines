@@ -179,6 +179,10 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, ret:ComplexType):Exp
         function __stateMachine(__result:$ret, __error:haxe.Exception):Coroutine.CoroutineResult {
             try {
                 while (true) {
+                    if (__error != null) {
+                        throw __error;
+                    }
+
                     $eswitch;
                 }
             } catch (exn) {

@@ -1,3 +1,5 @@
+import haxe.io.Bytes;
+import asys.native.system.Process;
 import sys.thread.Thread;
 import haxe.Exception;
 import Coroutine;
@@ -5,6 +7,64 @@ import Coroutine;
 @:build(Macro.build())
 class Main {
 	static var nextNumber = 0;
+
+	@:suspend static function write(string:String):Int {
+		return Coroutine.suspend(cont -> {
+			Thread.current().events.run(() -> {
+				Sys.println(string);
+
+				cont(string.length, null);
+			});
+			// Process.current.stdout.write(Bytes.ofString(string), 0, string.length, (result, error) -> {
+			// 	switch error {
+			// 		case null:
+			// 			cont(result, null);
+			// 		case exn:
+			// 			cont(0, exn);
+			// 	}
+			// });
+		});
+	}
+
+	@:suspend static function read():String {
+		return Coroutine.suspend(cont -> {
+			Thread.current().events.run(() -> {
+				cont(Sys.stdin().readLine(), null);
+			});
+
+			// final buffer = Bytes.alloc(1024);
+
+			// Process.current.stdin.read(buffer, 0, buffer.length, (result, error) -> {
+			// 	switch error {
+			// 		case null:
+			// 			cont(buffer.sub(0, result).toString(), null);
+			// 		case exn:
+			// 			cont(null, exn);
+			// 	}
+			// });
+		});
+	}
+
+	// @:suspend static function read():String {
+	// 	return Coroutine.suspend(cont -> {
+	// 		final buffer = Bytes.alloc(1024);
+
+	// 		Process.current.stdin.read(buffer, 0, buffer.length, (result, error) -> {
+	// 			switch error {
+	// 				case null:
+	// 					cont(buffer.sub(0, result).toString(), null);
+	// 				case exn:
+	// 					cont(null, exn);
+	// 			}
+	// 		});
+	// 	});
+	// }
+
+	@:suspend static function delay(ms:Int):Void {
+		return Coroutine.suspend(cont -> {
+			haxe.Timer.delay(() -> cont(null, null), ms);
+		});
+	}
 
 	@:suspend static function getNumber():Int {
 		return Coroutine.suspend(cont -> {
@@ -14,10 +74,13 @@ class Main {
 
 	@:suspend static function someAsync():Int {
 		trace("hi");
-		while (getNumber() < 10) {
-			trace('wait for it...');
 
-			trace(getNumber());
+		while (getNumber() < 10) {
+			write('wait for it...');
+
+			delay(1000);
+
+			write(Std.string(getNumber()));
 		}
 		// throw 'bye';
 		return 15;
