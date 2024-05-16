@@ -107,9 +107,9 @@ class Main {
 	static function main() {
 		final pool    = new FixedThreadPool(4);
 		final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
-		final result  = switch cooperativeCancellation(blocker) {
+		final result  = switch someAsync(blocker) {
 			case Suspended:
-				Timer.delay(blocker.cancel, 2000);
+				// Timer.delay(blocker.cancel, 2000);
 
 				blocker.wait();
 			case Success(v):
@@ -119,6 +119,14 @@ class Main {
 		}
 
 		trace(result);
+	}
+}
+
+private class ImmediateScheduler implements IScheduler {
+	public function new() {}
+
+	public function schedule(func:() -> Void) {
+		func();
 	}
 }
 

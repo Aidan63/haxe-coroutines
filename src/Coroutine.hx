@@ -1,4 +1,7 @@
+import sys.thread.Mutex;
+import haxe.exceptions.NotImplementedException;
 import haxe.Exception;
+import haxe.atomic.AtomicObject;
 
 interface IScheduler {
     function schedule(func:()->Void):Void;
@@ -87,11 +90,11 @@ interface IContinuation<T> {
 
 class Coroutine {
     public static function suspend(func:(IContinuation<Any>)->Void, cont:IContinuation<Any>):CoroutineResult<Any> {
-        cont._hx_context.scheduler.schedule(() -> {
-            func(cont);
-        });
+        final safe = new SafeContinuation(cont);
+
+        func(safe);
 	
-		return Suspended;
+		return safe.get();
     }
 
     public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
@@ -103,4 +106,59 @@ enum CoroutineResult<T> {
     Suspended;
     Success(v:T);
     Error(exn:Dynamic);
+}
+
+class SafeContinuation implements IContinuation<Any> {
+    final _hx_completion:IContinuation<Any>;
+    
+    final lock:Mutex;
+
+    var state:Null<CoroutineResult<Any>>;
+
+	public final _hx_context:CoroutineContext;
+
+    public function new(completion) {
+        _hx_completion = completion;
+        _hx_context    = _hx_completion._hx_context;
+        lock           = new Mutex();
+        state          = null;
+    }
+
+    public function resume(result:Any, error:Exception) {
+        _hx_context.scheduler.schedule(() -> {
+            lock.acquire();
+
+            switch state {
+                case null:
+                    switch error {
+                        case null:
+                            state = Success(result);
+                        case exn:
+                            state = Error(exn);
+                    }
+                    lock.release();
+                case _:
+                    lock.release();
+    
+                    _hx_completion.resume(result, error);
+            } 
+        });
+    }
+
+    public function get():CoroutineResult<Any> {
+        lock.acquire();
+
+        var result = switch state {
+            case Success(v):
+                Success(v);
+            case Error(exn):
+                Error(exn);
+            case _:
+                state = Suspended;
+        }
+
+        lock.release();
+
+        return result;
+    }
 }
