@@ -1,3 +1,4 @@
+import sys.thread.EventLoop;
 import haxe.io.Bytes;
 import asys.native.system.Process;
 import sys.thread.Thread;
@@ -87,7 +88,7 @@ class Main {
 	}
 
 	static function main() {
-		final blocker = new WaitingCompletion();
+		final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
 		final result  = switch someAsync(blocker) {
 			case Suspended:
 				blocker.wait();
@@ -101,12 +102,26 @@ class Main {
 	}
 }
 
+private class EventLoopScheduler implements IScheduler {
+	final loop:EventLoop;
+
+	public function new(loop) {
+		this.loop = loop;
+	}
+
+	public function schedule(func:() -> Void) {
+		loop.run(func);
+	}
+}
+
 private class WaitingCompletion implements IContinuation<Any> {
+	public final _hx_context:CoroutineContext;
 	var running : Bool;
 	var result : Int;
 	var error : Exception;
 
-	public function new() {
+	public function new(scheduler) {
+		_hx_context = new CoroutineContext(scheduler);
 		running = true;
 		result  = 0;
 		error   = null;

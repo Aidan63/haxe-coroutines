@@ -67,6 +67,7 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
 
     return macro class $className implements Coroutine.IContinuation<Any> {
         public final _hx_completion:Coroutine.IContinuation<Any>;
+        public final _hx_context:Coroutine.CoroutineContext;
 
         public var _hx_state:Int;
         public var _hx_result:Any;
@@ -74,6 +75,7 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
 
         public function new(completion) {
             _hx_completion = completion;
+            _hx_context    = completion._hx_context;
             _hx_state      = 0;
             _hx_result     = null;
             _hx_error      = null;
@@ -83,7 +85,9 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
             _hx_result = result;
             _hx_error  = error;
 
-            @:privateAccess $i{ owningClass }.$funcName($a{ args });
+            _hx_context.scheduler.schedule(() -> {
+                @:privateAccess $i{ owningClass }.$funcName($a{ args });
+            });
         }
     };
 }
