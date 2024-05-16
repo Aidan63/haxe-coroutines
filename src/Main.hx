@@ -1,3 +1,4 @@
+import haxe.Timer;
 import sys.thread.FixedThreadPool;
 import sys.thread.IThreadPool;
 import sys.thread.EventLoop;
@@ -23,7 +24,21 @@ class Main {
 
 	@:suspend static function delay(ms:Int):Void {
 		return Coroutine.suspend(cont -> {
-			haxe.Timer.delay(() -> cont.resume(null, null), ms);
+			var handle : EventHandler = null;
+
+			final events = Thread.current().events;
+
+			handle = events.repeat(() -> {
+				events.cancel(handle);
+
+				cont.resume(null, null);
+			}, ms);
+
+			cont._hx_context.token.register(() -> {
+				events.cancel(handle);
+
+				cont.resume(null, new CancellationException());
+			});
 		});
 	}
 
@@ -67,11 +82,23 @@ class Main {
 		return 0;
 	}
 
+	@:suspend static function cancellationTesting():Int {
+		trace('starting long delay...');
+
+		delay(10000);
+
+		trace('delay over!');
+
+		return 0;
+	}
+
 	static function main() {
 		final pool    = new FixedThreadPool(4);
 		final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
-		final result  = switch schedulerTesting(blocker) {
+		final result  = switch cancellationTesting(blocker) {
 			case Suspended:
+				Timer.delay(blocker.cancel, 2000);
+
 				blocker.wait();
 			case Success(v):
 				v;
@@ -116,16 +143,19 @@ private class ThreadPoolScheduler implements IScheduler {
 }
 
 private class WaitingCompletion implements IContinuation<Any> {
+	final source:CancellationTokenSource;
+
 	public final _hx_context:CoroutineContext;
 	var running : Bool;
 	var result : Int;
 	var error : Exception;
 
 	public function new(scheduler) {
-		_hx_context = new CoroutineContext(scheduler);
-		running = true;
-		result  = 0;
-		error   = null;
+		source      = new CancellationTokenSource();
+		_hx_context = new CoroutineContext(scheduler, source.token);
+		running     = true;
+		result      = 0;
+		error       = null;
 	}
 
 	public function resume(result:Any, error:Exception) {
@@ -145,5 +175,9 @@ private class WaitingCompletion implements IContinuation<Any> {
 		} else {
 			return result;
 		}
+	}
+
+	public function cancel() {
+		source.cancel();
 	}
 }
