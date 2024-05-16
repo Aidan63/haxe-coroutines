@@ -1,3 +1,5 @@
+import sys.thread.FixedThreadPool;
+import sys.thread.IThreadPool;
 import sys.thread.EventLoop;
 import haxe.io.Bytes;
 import asys.native.system.Process;
@@ -16,50 +18,8 @@ class Main {
 
 				cont.resume(string.length, null);
 			});
-			// Process.current.stdout.write(Bytes.ofString(string), 0, string.length, (result, error) -> {
-			// 	switch error {
-			// 		case null:
-			// 			cont(result, null);
-			// 		case exn:
-			// 			cont(0, exn);
-			// 	}
-			// });
 		});
 	}
-
-	@:suspend static function read():String {
-		return Coroutine.suspend(cont -> {
-			Thread.current().events.run(() -> {
-				cont.resume(Sys.stdin().readLine(), null);
-			});
-
-			// final buffer = Bytes.alloc(1024);
-
-			// Process.current.stdin.read(buffer, 0, buffer.length, (result, error) -> {
-			// 	switch error {
-			// 		case null:
-			// 			cont(buffer.sub(0, result).toString(), null);
-			// 		case exn:
-			// 			cont(null, exn);
-			// 	}
-			// });
-		});
-	}
-
-	// @:suspend static function read():String {
-	// 	return Coroutine.suspend(cont -> {
-	// 		final buffer = Bytes.alloc(1024);
-
-	// 		Process.current.stdin.read(buffer, 0, buffer.length, (result, error) -> {
-	// 			switch error {
-	// 				case null:
-	// 					cont(buffer.sub(0, result).toString(), null);
-	// 				case exn:
-	// 					cont(null, exn);
-	// 			}
-	// 		});
-	// 	});
-	// }
 
 	@:suspend static function delay(ms:Int):Void {
 		return Coroutine.suspend(cont -> {
@@ -73,6 +33,16 @@ class Main {
 		});
 	}
 
+	@:suspend static function spawnThread():Void {
+		return Coroutine.suspend(cont -> {
+			Thread.create(() -> {
+				trace('Hello from thread ${ @:privateAccess Thread.current().handle() }');
+
+				cont.resume(null, null);
+			});
+		});
+	}
+
 	@:suspend static function someAsync():Int {
 		trace("hi");
 
@@ -83,13 +53,24 @@ class Main {
 
 			write(Std.string(getNumber()));
 		}
-		// throw 'bye';
+
 		return 15;
 	}
 
+	@:suspend static function schedulerTesting():Int {
+		trace('coro from thread ${ @:privateAccess Thread.current().handle() }');
+
+		spawnThread();
+
+		trace('coro from thread ${ @:privateAccess Thread.current().handle() }');
+
+		return 0;
+	}
+
 	static function main() {
+		final pool    = new FixedThreadPool(4);
 		final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
-		final result  = switch someAsync(blocker) {
+		final result  = switch schedulerTesting(blocker) {
 			case Suspended:
 				blocker.wait();
 			case Success(v):
@@ -111,6 +92,26 @@ private class EventLoopScheduler implements IScheduler {
 
 	public function schedule(func:() -> Void) {
 		loop.run(func);
+	}
+}
+
+private class NewThreadScheduler implements IScheduler {
+	public function new() {}
+
+	public function schedule(func:() -> Void) {
+		Thread.create(func);
+	}
+}
+
+private class ThreadPoolScheduler implements IScheduler {
+	final pool : IThreadPool;
+
+	public function new(pool) {
+		this.pool = pool;
+	}
+
+	public function schedule(func:() -> Void) {
+		pool.run(func);
 	}
 }
 

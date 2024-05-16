@@ -1,4 +1,3 @@
-import sys.thread.Thread;
 import haxe.Exception;
 
 interface IScheduler {
@@ -15,7 +14,7 @@ class CoroutineContext {
 
 interface IContinuation<T> {
     final _hx_context:CoroutineContext;
-    
+
 	function resume(result:T, error:Exception):Void;
 }
 
