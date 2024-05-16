@@ -42,7 +42,7 @@ class BasicBlock {
 	}
 
 	public function assignVar(name, expr) {
-		elements.push(macro $i{name} = $expr);
+		elements.push(macro _hx_continuation.$name = $expr);
 	}
 }
 
@@ -372,7 +372,7 @@ class FlowGraph {
 				var tmpVarName = "tmp" + (tmpVarId++);
 				bb.declareVar(tmpVarName, null);
 				var bbNext = createBlock();
-				bbNext.addElement(macro $i{tmpVarName} = __result);
+				bbNext.addElement(macro $i{tmpVarName} = cast _hx_continuation._hx_result);
 				bb.setEdge(Suspend(eobj, args, bbNext));
 				{bb: bbNext, e: macro $i{tmpVarName}};
 			case _:
@@ -382,7 +382,8 @@ class FlowGraph {
 
 	function createBlock() return new BasicBlock(nextBlockId++);
 
-	public static function build(fun:Function):{root:BasicBlock, hasSuspend:Bool} {
+	public static function build(fun:Function, provided:Array<String>):{root:BasicBlock, hasSuspend:Bool} {
+		found = provided;
 		var graph = new FlowGraph();
 		var bbRoot = graph.createBlock();
 		graph.block(bbRoot, fun.expr);

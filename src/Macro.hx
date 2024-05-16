@@ -18,7 +18,7 @@ class Macro {
 		for (field in fields) {
 			switch field.kind {
 				case FFun(fun) if (Lambda.exists(field.meta, m -> m.name == ":suspend")):
-					field.kind = FFun(Codegen.doTransform(fun, field.pos, coros));
+					field.kind = FFun(Codegen.doTransform(field.name, fun, field.pos, coros));
 
 					trace(field.name);
 					trace(new Printer().printField(field));

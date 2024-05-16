@@ -13,7 +13,7 @@ class Main {
 			Thread.current().events.run(() -> {
 				Sys.println(string);
 
-				cont(string.length, null);
+				cont.resume(string.length, null);
 			});
 			// Process.current.stdout.write(Bytes.ofString(string), 0, string.length, (result, error) -> {
 			// 	switch error {
@@ -29,7 +29,7 @@ class Main {
 	@:suspend static function read():String {
 		return Coroutine.suspend(cont -> {
 			Thread.current().events.run(() -> {
-				cont(Sys.stdin().readLine(), null);
+				cont.resume(Sys.stdin().readLine(), null);
 			});
 
 			// final buffer = Bytes.alloc(1024);
@@ -62,13 +62,13 @@ class Main {
 
 	@:suspend static function delay(ms:Int):Void {
 		return Coroutine.suspend(cont -> {
-			haxe.Timer.delay(() -> cont(null, null), ms);
+			haxe.Timer.delay(() -> cont.resume(null, null), ms);
 		});
 	}
 
 	@:suspend static function getNumber():Int {
 		return Coroutine.suspend(cont -> {
-			cont(++nextNumber, null);
+			cont.resume(++nextNumber, null);
 		});
 	}
 
@@ -86,101 +86,48 @@ class Main {
 		return 15;
 	}
 
-	// @:suspend static function fibonacci(yield):Void {
-	// 	yield(1); // first Fibonacci number
-	// 	var cur = 1;
-	// 	var next = 1;
-	// 	while (true) {
-	// 		yield(next); // next Fibonacci number
-	// 		var tmp = cur + next;
-	// 		cur = next;
-	// 		next = tmp;
-	// 	}
-	// }
-
 	static function main() {
-		var running = true;
-		var result  = 0;
-		var error   = null;
-
-		var coro    = someAsync((v, exn) -> {
-			running = false;
-
-			if (exn != null) {
-				error = exn;
-			} else {
-				result = v;
-			}
-
-			return null;
-		});
-		switch coro(0, null) {
+		final blocker = new WaitingCompletion();
+		final result  = switch someAsync(blocker) {
 			case Suspended:
-				while (running) {
-					Thread.current().events.progress();
-				}
-
-				if (error != null) {
-					throw error;
-				} else {
-					trace(result);
-				}
+				blocker.wait();
 			case Success(v):
-				trace(v);
+				v;
 			case Error(exn):
 				throw exn;
 		}
 
-		// for (v in new Gen(fibonacci)) {
-		// 	trace(v);
-		// 	if (v > 10000)
-		// 		break;
-		// }
+		trace(result);
 	}
 }
 
-// typedef Yield<T> = T->Continuation<Any>->Void;
+private class WaitingCompletion implements IContinuation<Any> {
+	var running : Bool;
+	var result : Int;
+	var error : Exception;
 
-// enum GenState {
-// 	NotReady;
-// 	Ready;
-// 	Done;
-// 	Failed;
-// }
+	public function new() {
+		running = true;
+		result  = 0;
+		error   = null;
+	}
 
-// class Gen {
-// 	var nextStep:Continuation<Any>;
-// 	var nextValue:Int;
-// 	var state:GenState;
+	public function resume(result:Any, error:Exception) {
+		running = false;
 
-// 	public function new(cont:Yield<Int>->Continuation<Dynamic>->Continuation<Any>) {
-// 		nextStep = cont(yield, done);
-// 		state = NotReady;
-// 	}
+		this.result = result;
+		this.error  = error;
+	}
 
-// 	function yield(value:Int, next:Continuation<Dynamic>) {
-// 		nextValue = value;
-// 		state = Ready;
-// 	}
+	public function wait():Int {
+		while (running) {
+			Thread.current().events.progress();
+		}
 
-// 	function done(result:Any) {
-// 		state = Done;
-// 	}
-
-// 	public function hasNext():Bool {
-// 		return switch state {
-// 			case Done: false;
-// 			case Ready: true;
-// 			case _:
-// 				state = Failed;
-// 				nextStep(null);
-// 				state == Ready;
-// 		}
-// 	}
-
-// 	public function next():Int {
-// 		if (!hasNext()) throw "no more";
-// 		state = NotReady;
-// 		return nextValue;
-// 	}
-// }
+		if (error != null) {
+			throw error;
+		} else {
+			return result;
+		}
+	}
+}
