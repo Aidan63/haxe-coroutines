@@ -12,6 +12,8 @@ import Coroutine;
 class Main {
 	static var nextNumber = 0;
 
+	static var accumulated = 0;
+
 	@:suspend static function write(string:String):Int {
 		return Coroutine.suspend(cont -> {
 			Thread.current().events.run(() -> {
@@ -37,7 +39,7 @@ class Main {
 			cont._hx_context.token.register(() -> {
 				events.cancel(handle);
 
-				cont.resume(null, new CancellationException());
+				cont.resume(null, new CancellationException('delay has been cancelled'));
 			});
 		});
 	}
@@ -92,10 +94,20 @@ class Main {
 		return 0;
 	}
 
+	@:suspend static function cooperativeCancellation():Int {
+		trace('starting work');
+
+		while (Coroutine.isCancellationRequested() == false) {
+			accumulated = getNumber();
+		}
+
+		return accumulated;
+	}
+
 	static function main() {
 		final pool    = new FixedThreadPool(4);
 		final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
-		final result  = switch cancellationTesting(blocker) {
+		final result  = switch cooperativeCancellation(blocker) {
 			case Suspended:
 				Timer.delay(blocker.cancel, 2000);
 

@@ -5,8 +5,8 @@ interface IScheduler {
 }
 
 class CancellationException extends Exception {
-    public function new() {
-        super('Cancelled');
+    public function new(message:String) {
+        super(message);
     }
 }
 
@@ -31,7 +31,7 @@ class CancellationTokenSource {
 
     public function register(func:()->Void) {
         if (isCancellationRequested) {
-            throw new CancellationException();
+            throw new CancellationException('Cancellation token has already been cancelled');
         }
 
         registrations.push(func);
@@ -39,7 +39,7 @@ class CancellationTokenSource {
 
     public function cancel() {
         if (isCancellationRequested) {
-            throw new CancellationException();
+            throw new CancellationException('Cancellation token has already been cancelled');
         }
 
         cancelled = true;
@@ -92,6 +92,10 @@ class Coroutine {
         });
 	
 		return Suspended;
+    }
+
+    public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
+        return macro _hx_continuation._hx_context.token.isCancellationRequested;
     }
 }
 
