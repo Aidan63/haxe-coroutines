@@ -225,31 +225,3 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
         vars : varDecls
     };
 }
-
-function buildBlocking(exprs:Array<Expr>):Expr {
-    final result = switch exprs {
-        case [ func ]:
-            switch func.expr {
-                case EConst(CIdent(func)):
-                    { name: func, scheduler: macro new EventLoopScheduler(Thread.current().events) }
-                case _:
-                    throw new haxe.Exception('Function must be EConst(CIdent(_))');
-            }
-        case [ func, scheduler ]:
-            switch func.expr {
-                case EConst(CIdent(func)):
-                    { name: func, scheduler: scheduler }
-                case _:
-                    throw new haxe.Exception('Function must be EConst(CIdent(_))');
-            }
-        case _:
-            throw new haxe.Exception('Invalid number of arguments');
-    }
-
-    return macro {
-        final blocker = new WaitingCompletion($e{ result.scheduler });
-        final _hx_tmp = $i{ result.name }(blocker);
-        
-        return if (_hx_tmp is Coroutine.Primitive) blocker.wait() else _hx_tmp;
-    }
-}

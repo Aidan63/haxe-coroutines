@@ -1,9 +1,8 @@
+import coro.schedulers.IScheduler;
+import coro.schedulers.EventLoopScheduler;
+import sys.thread.Thread;
 import sys.thread.Mutex;
 import haxe.Exception;
-
-interface IScheduler {
-    function schedule(func:()->Void):Void;
-}
 
 class CancellationException extends Exception {
     public function new(message:String) {
@@ -95,21 +94,23 @@ class Coroutine {
 		return safe.getOrThrow();
     }
 
-    public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
-        return macro _hx_continuation._hx_context.token.isCancellationRequested;
+    public static function start(block:IContinuation<Any>->Any):Any {
+        return startWith(block, new EventLoopScheduler(Thread.current().events));
     }
 
-    public static macro function start(func:haxe.macro.Expr, exprs:Array<haxe.macro.Expr>):haxe.macro.Expr {
-        final all = switch exprs {
-            case null:
-                [ func ];
-            case extra:
-                extra.insert(0, func);
+    public static function startWith(block:IContinuation<Any>->Any, scheduler:IScheduler) {
+        final completion = new BlockingContinuation(scheduler);
+        final token      = block(completion);
 
-                extra;
+        if (token is Primitive) {
+            return completion.wait();
+        } else {
+            return token;
         }
+    }
 
-        return Codegen.buildBlocking(all);
+    public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
+        return macro _hx_continuation._hx_context.token.isCancellationRequested;
     }
 }
 
@@ -120,7 +121,7 @@ class Primitive {
     function new() {}
 }
 
-class SafeContinuation<T> implements IContinuation<T> {
+private class SafeContinuation<T> implements IContinuation<T> {
     final _hx_completion:IContinuation<Any>;
     
     final lock:Mutex;
@@ -185,4 +186,44 @@ class SafeContinuation<T> implements IContinuation<T> {
 
         return Coroutine.Primitive.suspended;
     }
+}
+
+private class BlockingContinuation<T> implements IContinuation<Any> {
+	final source:CancellationTokenSource;
+
+	public final _hx_context:CoroutineContext;
+	var running : Bool;
+	var result : Int;
+	var error : Exception;
+
+	public function new(scheduler) {
+		source      = new CancellationTokenSource();
+		_hx_context = new CoroutineContext(scheduler, source.token);
+		running     = true;
+		result      = 0;
+		error       = null;
+	}
+
+	public function resume(result:Any, error:Exception) {
+		running = false;
+
+		this.result = result;
+		this.error  = error;
+	}
+
+	public function wait():T {
+		while (running) {
+			Thread.current().events.progress();
+		}
+
+		if (error != null) {
+			throw error;
+		} else {
+			return cast result;
+		}
+	}
+
+	public function cancel() {
+		source.cancel();
+	}
 }
