@@ -1,6 +1,6 @@
+import Transform;
 import haxe.macro.Printer;
 import haxe.macro.Context;
-import Transform;
 import haxe.macro.Expr;
 
 using haxe.macro.ExprTools;
@@ -25,7 +25,7 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
 
     return {
         args: coroArgs,
-        ret : macro : CoroutineResult<Any>,
+        ret : macro : Any,
         expr: macro {
             final _hx_continuation = if (_hx_completion is $complexType) (cast _hx_completion : $complexType) else new $typePath(_hx_completion);
 
@@ -44,7 +44,7 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
                 _hx_continuation._hx_error = exn;
                 _hx_continuation._hx_completion.resume(null, exn);
 
-                return Error(exn);
+                return null;
             }
         }
     };
@@ -110,7 +110,7 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
                 exprs.push(macro {
                     _hx_continuation._hx_state = -1;
                     _hx_continuation._hx_completion.resume($last, null);
-                    return Coroutine.CoroutineResult.Success($last);
+                    return $last;
                 });
 
             case Throw:
@@ -128,7 +128,7 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
                 exprs.push(macro {
                     _hx_continuation._hx_state = -1;
                     _hx_continuation._hx_completion(null, null);
-                    return;
+                    return null;
                 });
 
             case Suspend(ef, args, bbNext):
@@ -139,14 +139,12 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
                 exprs.push(macro {
                     _hx_continuation._hx_state = $v{bbNext.id};
 
-                    switch ($ef($a{args})) {
-                        case Suspended:
-                            return Coroutine.CoroutineResult.Suspended;
-                        case Success(v):
-                            _hx_continuation._hx_result = v;
-                        case Error(exn):
-                            throw exn;
+                    var _hx_tmp = $ef($a{args});
+                    if (_hx_tmp is Coroutine.Primitive) {
+                        return Coroutine.Primitive.suspended;
                     }
+                    
+                    _hx_continuation._hx_result = _hx_tmp;
                 });
                 loop(bbNext);
 
@@ -250,14 +248,8 @@ function buildBlocking(exprs:Array<Expr>):Expr {
 
     return macro {
         final blocker = new WaitingCompletion($e{ result.scheduler });
-
-        switch $i{ result.name }(blocker) {
-            case Suspended:
-                blocker.wait();
-            case Success(v):
-                v;
-            case Error(exn):
-                throw exn;
-        }
+        final _hx_tmp = $i{ result.name }(blocker);
+        
+        return if (_hx_tmp is Coroutine.Primitive) blocker.wait() else _hx_tmp;
     }
 }

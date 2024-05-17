@@ -74,6 +74,8 @@ class Main {
 			write(Std.string(getNumber()));
 		}
 
+		throw new Exception('bye');
+
 		return 15;
 	}
 
@@ -115,18 +117,16 @@ class Main {
 		return accumulated;
 	}
 
-	static function main() {
+	static function main():Void {
 		// final pool    = new FixedThreadPool(4);
 		// final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
-		// final result  = switch someAsync(blocker) {
-		// 	case Suspended:
-		// 		// Timer.delay(blocker.cancel, 2000);
+		// final token   = cancellationTesting(blocker);
+		// final result  = if (token is Coroutine.Primitive) {
+		// 	Timer.delay(blocker.cancel, 2000);
 
-		// 		blocker.wait();
-		// 	case Success(v):
-		// 		v;
-		// 	case Error(exn):
-		// 		throw exn;
+		// 	blocker.wait();
+		// } else {
+		// 	token;
 		// }
 
 		// trace(result);

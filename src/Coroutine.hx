@@ -87,12 +87,12 @@ interface IContinuation<T> {
 }
 
 class Coroutine {
-    public static function suspend(func:(IContinuation<Any>)->Void, cont:IContinuation<Any>):CoroutineResult<Any> {
-        final safe = new SafeContinuation(cont);
+    public static function suspend(func:(IContinuation<Any>)->Void, _hx_continuation:IContinuation<Any>):Any {
+        final safe = new SafeContinuation(_hx_continuation);
 
         func(safe);
 	
-		return safe.get();
+		return safe.getOrThrow();
     }
 
     public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
@@ -113,10 +113,11 @@ class Coroutine {
     }
 }
 
-enum CoroutineResult<T> {
-    Suspended;
-    Success(v:T);
-    Error(exn:Dynamic);
+class Primitive {
+    
+    public static final suspended = new Primitive();
+
+    function new() {}
 }
 
 class SafeContinuation<T> implements IContinuation<T> {
@@ -124,52 +125,64 @@ class SafeContinuation<T> implements IContinuation<T> {
     
     final lock:Mutex;
 
-    var state:Null<CoroutineResult<T>>;
+    var assigned:Bool;
+
+    var _hx_result:Any;
+
+    var _hx_error:Any;
 
 	public final _hx_context:CoroutineContext;
 
     public function new(completion) {
         _hx_completion = completion;
         _hx_context    = _hx_completion._hx_context;
+        _hx_result     = null;
+        _hx_error      = null;
+        assigned       = false;
         lock           = new Mutex();
-        state          = null;
     }
 
     public function resume(result:T, error:Exception) {
         _hx_context.scheduler.schedule(() -> {
             lock.acquire();
 
-            switch state {
-                case null:
-                    switch error {
-                        case null:
-                            state = Success(result);
-                        case exn:
-                            state = Error(exn);
-                    }
-                    lock.release();
-                case _:
-                    lock.release();
+            if (assigned) {
+                lock.release();
     
-                    _hx_completion.resume(result, error);
-            } 
+                _hx_completion.resume(result, error);
+            } else {
+                assigned   = true;
+                _hx_result = result;
+                _hx_error  = error;
+
+                lock.release();
+            }
         });
     }
 
-    public function get():CoroutineResult<T> {
+    public function getOrThrow():Any {
         lock.acquire();
 
-        var result = switch state {
-            case Success(v):
-                Success(v);
-            case Error(exn):
-                Error(exn);
-            case _:
-                state = Suspended;
+        if (assigned) {
+            if (_hx_error != null) {
+                final tmp = _hx_error;
+
+                lock.release();
+
+                throw tmp;
+            }
+
+            final tmp = _hx_result;
+
+            lock.release();
+
+            return tmp;
         }
+
+        assigned = true;
 
         lock.release();
 
-        return result;
+        return Coroutine.Primitive.suspended;
     }
 }
