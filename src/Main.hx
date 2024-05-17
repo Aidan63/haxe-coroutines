@@ -3,7 +3,6 @@ import sys.thread.FixedThreadPool;
 import sys.thread.IThreadPool;
 import sys.thread.EventLoop;
 import haxe.io.Bytes;
-import asys.native.system.Process;
 import sys.thread.Thread;
 import haxe.Exception;
 import Coroutine;
@@ -53,7 +52,11 @@ class Main {
 	@:suspend static function spawnThread():Void {
 		return Coroutine.suspend(cont -> {
 			Thread.create(() -> {
-				trace('Hello from thread ${ @:privateAccess Thread.current().handle() }');
+#if cpp
+				trace('Hello from thread ${ untyped Thread.current().handle }');
+#else
+				trace('Hello from thread ${ Thread.current() }');
+#end
 
 				cont.resume(null, null);
 			});
@@ -75,11 +78,19 @@ class Main {
 	}
 
 	@:suspend static function schedulerTesting():Int {
-		trace('coro from thread ${ @:privateAccess Thread.current().handle() }');
+#if cpp
+		trace('coro from thread ${ untyped Thread.current().handle }');
+#else
+		trace('coro from thread ${ Thread.current() }');
+#end
 
 		spawnThread();
 
-		trace('coro from thread ${ @:privateAccess Thread.current().handle() }');
+#if cpp
+		trace('coro from thread ${ untyped Thread.current().handle }');
+#else
+		trace('coro from thread ${ Thread.current() }');
+#end
 
 		return 0;
 	}
@@ -105,20 +116,22 @@ class Main {
 	}
 
 	static function main() {
-		final pool    = new FixedThreadPool(4);
-		final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
-		final result  = switch someAsync(blocker) {
-			case Suspended:
-				// Timer.delay(blocker.cancel, 2000);
+		// final pool    = new FixedThreadPool(4);
+		// final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
+		// final result  = switch someAsync(blocker) {
+		// 	case Suspended:
+		// 		// Timer.delay(blocker.cancel, 2000);
 
-				blocker.wait();
-			case Success(v):
-				v;
-			case Error(exn):
-				throw exn;
-		}
+		// 		blocker.wait();
+		// 	case Success(v):
+		// 		v;
+		// 	case Error(exn):
+		// 		throw exn;
+		// }
 
-		trace(result);
+		// trace(result);
+
+		trace(Coroutine.start(someAsync));
 	}
 }
 
@@ -162,7 +175,7 @@ private class ThreadPoolScheduler implements IScheduler {
 	}
 }
 
-private class WaitingCompletion implements IContinuation<Any> {
+private class WaitingCompletion<T> implements IContinuation<Any> {
 	final source:CancellationTokenSource;
 
 	public final _hx_context:CoroutineContext;
@@ -185,7 +198,7 @@ private class WaitingCompletion implements IContinuation<Any> {
 		this.error  = error;
 	}
 
-	public function wait():Int {
+	public function wait():T {
 		while (running) {
 			Thread.current().events.progress();
 		}
@@ -193,7 +206,7 @@ private class WaitingCompletion implements IContinuation<Any> {
 		if (error != null) {
 			throw error;
 		} else {
-			return result;
+			return cast result;
 		}
 	}
 

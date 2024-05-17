@@ -226,79 +226,38 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
         expr : eswitch,
         vars : varDecls
     };
-
-    // return macro {
-    //     var __state = 0;
-
-    //     ${ {pos: pos, expr: EVars(varDecls)} };
-
-    //     try {
-    //         while (true) {
-    //             if (completion._hx_error != null) {
-    //                 throw completion._hx_error;
-    //             }
-
-    //             $eswitch;
-    //         }
-    //     } catch (exn) {
-    //         _hx_continuation._hx_state = -1;
-    //         _hx_continuation._hx_completion.resume(null, exn);
-
-    //         return Error(exn);
-    //     }
-    // };
 }
 
-// static function buildSimpleCPS(bbRoot:BasicBlock, pos:Position):Expr {
-// 	function loop(bb:BasicBlock, exprs:Array<Expr>) {
-// 		switch bb.edge {
-// 			case Suspend(_):
-// 				throw "Suspend in a non-suspending coroutine?";
+function buildBlocking(exprs:Array<Expr>):Expr {
+    final result = switch exprs {
+        case [ func ]:
+            switch func.expr {
+                case EConst(CIdent(func)):
+                    { name: func, scheduler: macro new EventLoopScheduler(Thread.current().events) }
+                case _:
+                    throw new haxe.Exception('Function must be EConst(CIdent(_))');
+            }
+        case [ func, scheduler ]:
+            switch func.expr {
+                case EConst(CIdent(func)):
+                    { name: func, scheduler: scheduler }
+                case _:
+                    throw new haxe.Exception('Function must be EConst(CIdent(_))');
+            }
+        case _:
+            throw new haxe.Exception('Invalid number of arguments');
+    }
 
-// 			case Return:
-// 				var last = bb.elements[bb.elements.length - 1];
-// 				for (i in 0...bb.elements.length - 1)
-// 					exprs.push(bb.elements[i]);
-// 				exprs.push(macro __continuation($last));
-// 				exprs.push(macro return);
+    return macro {
+        final blocker = new WaitingCompletion($e{ result.scheduler });
 
-// 			case Next(bbNext):
-// 				for (e in bb.elements) exprs.push(e);
-// 				loop(bbNext, exprs);
-
-// 			case Loop(bbHead, bbBody, bbNext):
-// 				for (e in bb.elements) exprs.push(e);
-
-// 				var headExprs = [];
-// 				loop(bbHead, headExprs);
-// 				var condExpr = headExprs.pop();
-// 				var bodyExprs = [];
-// 				loop(bbBody, bodyExprs);
-// 				var loopExpr = macro {
-// 					$b{headExprs};
-// 					if (!$condExpr) break;
-// 					$b{bodyExprs};
-// 				};
-// 				exprs.push(macro do $loopExpr while (true));
-// 				loop(bbNext, exprs);
-
-// 			case LoopHead(_, _) | LoopBack(_):
-// 				for (e in bb.elements) exprs.push(e);
-
-// 			case LoopContinue(_):
-// 				for (e in bb.elements) exprs.push(e);
-// 				exprs.push(macro continue);
-
-// 			case LoopBreak(_):
-// 				for (e in bb.elements) exprs.push(e);
-// 				exprs.push(macro break);
-
-// 			case IfThen(_, _) | IfThenElse(_, _, _):
-// 				throw "TODO";
-// 		}
-// 	}
-
-// 	var exprs = [];
-// 	loop(bbRoot, exprs);
-// 	return macro $b{exprs};
-// }
+        switch $i{ result.name }(blocker) {
+            case Suspended:
+                blocker.wait();
+            case Success(v):
+                v;
+            case Error(exn):
+                throw exn;
+        }
+    }
+}

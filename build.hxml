@@ -4,5 +4,4 @@
 -D analyzer-optimize
 -dce full
 -D dump=pretty
--L hxcpp_asys
 --debug

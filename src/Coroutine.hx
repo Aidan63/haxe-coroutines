@@ -1,7 +1,5 @@
 import sys.thread.Mutex;
-import haxe.exceptions.NotImplementedException;
 import haxe.Exception;
-import haxe.atomic.AtomicObject;
 
 interface IScheduler {
     function schedule(func:()->Void):Void;
@@ -100,6 +98,19 @@ class Coroutine {
     public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
         return macro _hx_continuation._hx_context.token.isCancellationRequested;
     }
+
+    public static macro function start(func:haxe.macro.Expr, exprs:Array<haxe.macro.Expr>):haxe.macro.Expr {
+        final all = switch exprs {
+            case null:
+                [ func ];
+            case extra:
+                extra.insert(0, func);
+
+                extra;
+        }
+
+        return Codegen.buildBlocking(all);
+    }
 }
 
 enum CoroutineResult<T> {
@@ -108,12 +119,12 @@ enum CoroutineResult<T> {
     Error(exn:Dynamic);
 }
 
-class SafeContinuation implements IContinuation<Any> {
+class SafeContinuation<T> implements IContinuation<T> {
     final _hx_completion:IContinuation<Any>;
     
     final lock:Mutex;
 
-    var state:Null<CoroutineResult<Any>>;
+    var state:Null<CoroutineResult<T>>;
 
 	public final _hx_context:CoroutineContext;
 
@@ -124,7 +135,7 @@ class SafeContinuation implements IContinuation<Any> {
         state          = null;
     }
 
-    public function resume(result:Any, error:Exception) {
+    public function resume(result:T, error:Exception) {
         _hx_context.scheduler.schedule(() -> {
             lock.acquire();
 
@@ -145,7 +156,7 @@ class SafeContinuation implements IContinuation<Any> {
         });
     }
 
-    public function get():CoroutineResult<Any> {
+    public function get():CoroutineResult<T> {
         lock.acquire();
 
         var result = switch state {
