@@ -99,8 +99,34 @@ class Coroutine {
     }
 
     public static function startWith(block:IContinuation<Any>->Any, scheduler:IScheduler) {
-        final completion = new BlockingContinuation(scheduler);
-        final token      = block(completion);
+        return launchWith(block, scheduler).await();
+    }
+
+    public static function launch(block:IContinuation<Any>->Any):Task {
+        return new Task(new BlockingContinuation(new EventLoopScheduler(Thread.current().events)), block);
+    }
+
+    public static function launchWith(block:IContinuation<Any>->Any, scheduler:IScheduler):Task {
+        return new Task(new BlockingContinuation(scheduler), block);
+    }
+
+    public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
+        return macro _hx_continuation._hx_context.token.isCancellationRequested;
+    }
+}
+
+class Task {
+    final completion : BlockingContinuation;
+
+    final block : IContinuation<Any>->Any;
+
+    public function new(completion, block) {
+        this.completion = completion;
+        this.block      = block;
+    }
+
+    public function await():Any {
+        final token = block(completion);
 
         if (token is Primitive) {
             return completion.wait();
@@ -109,8 +135,8 @@ class Coroutine {
         }
     }
 
-    public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
-        return macro _hx_continuation._hx_context.token.isCancellationRequested;
+    public function cancel() {
+        completion.cancel();
     }
 }
 
@@ -188,7 +214,7 @@ private class SafeContinuation<T> implements IContinuation<T> {
     }
 }
 
-private class BlockingContinuation<T> implements IContinuation<Any> {
+private class BlockingContinuation implements IContinuation<Any> {
 	final source:CancellationTokenSource;
 
 	public final _hx_context:CoroutineContext;
@@ -211,7 +237,7 @@ private class BlockingContinuation<T> implements IContinuation<Any> {
 		this.error  = error;
 	}
 
-	public function wait():T {
+	public function wait():Any {
 		while (running) {
 			Thread.current().events.progress();
 		}

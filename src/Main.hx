@@ -118,18 +118,11 @@ class Main {
 	}
 
 	static function main():Void {
-		// final pool    = new FixedThreadPool(4);
-		// final blocker = new WaitingCompletion(new EventLoopScheduler(Thread.current().events));
-		// final token   = cancellationTesting(blocker);
-		// final result  = if (token is Coroutine.Primitive) {
-		// 	Timer.delay(blocker.cancel, 2000);
+		// final task = Coroutine.launch(cancellationTesting);
 
-		// 	blocker.wait();
-		// } else {
-		// 	token;
-		// }
+		// Timer.delay(task.cancel, 2000);
 
-		// trace(result);
+		// trace(task.await());
 
 		trace(Coroutine.start(someAsync));
 	}
