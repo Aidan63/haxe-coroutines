@@ -10,6 +10,16 @@ class CancellationException extends Exception {
     }
 }
 
+abstract Registration(()->Void) {
+    public function new(func:()->Void) {
+        this = func;
+    }
+
+    public function unregister() {
+        this();
+    }
+}
+
 class CancellationTokenSource {
     var cancelled:Bool;
 
@@ -29,12 +39,14 @@ class CancellationTokenSource {
         registrations = [];
     }
 
-    public function register(func:()->Void) {
+    public function register(func:()->Void):Registration {
         if (isCancellationRequested) {
             throw new CancellationException('Cancellation token has already been cancelled');
         }
 
         registrations.push(func);
+
+        return new Registration(() -> registrations.remove(func));
     }
 
     public function cancel() {
@@ -63,8 +75,8 @@ class CancellationToken {
         this.source = source;
     }
 
-    public function register(func:()->Void) {
-        source.register(func);
+    public function register(func:()->Void):Registration {
+        return source.register(func);
     }
 }
 
@@ -86,7 +98,7 @@ interface IContinuation<T> {
 }
 
 class Coroutine {
-    public static function suspend(func:(IContinuation<Any>)->Void, _hx_continuation:IContinuation<Any>):Any {
+    public static inline function suspend(func:(IContinuation<Any>)->Void, _hx_continuation:IContinuation<Any>):Any {
         final safe = new SafeContinuation(_hx_continuation);
 
         func(safe);

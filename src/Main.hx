@@ -1,3 +1,4 @@
+import coro.schedulers.ThreadPoolScheduler;
 import haxe.Timer;
 import sys.thread.FixedThreadPool;
 import sys.thread.IThreadPool;
@@ -25,17 +26,19 @@ class Main {
 
 	@:suspend static function delay(ms:Int):Void {
 		return Coroutine.suspend(cont -> {
-			var handle : EventHandler = null;
+			var handle       : EventHandler = null;
+			var registration : Registration = null;
 
 			final events = Thread.current().events;
 
 			handle = events.repeat(() -> {
 				events.cancel(handle);
+				registration.unregister();
 
 				cont.resume(null, null);
 			}, ms);
 
-			cont._hx_context.token.register(() -> {
+			registration = cont._hx_context.token.register(() -> {
 				events.cancel(handle);
 
 				cont.resume(null, new CancellationException('delay has been cancelled'));
@@ -74,7 +77,7 @@ class Main {
 			write(Std.string(getNumber()));
 		}
 
-		throw new Exception('bye');
+		// throw new Exception('bye');
 
 		return 15;
 	}
@@ -117,13 +120,13 @@ class Main {
 		return accumulated;
 	}
 
-	static function main():Void {
-		// final task = Coroutine.launch(cancellationTesting);
-
-		// Timer.delay(task.cancel, 2000);
-
-		// trace(task.await());
-
+	static function main() {
 		trace(Coroutine.start(someAsync));
+
+		final task = Coroutine.launch(cancellationTesting);
+
+		Timer.delay(task.cancel, 2000);
+
+		trace(task.await());
 	}
 }
