@@ -1,3 +1,4 @@
+import coro.Primitive;
 import coro.schedulers.IScheduler;
 import coro.schedulers.EventLoopScheduler;
 import sys.thread.Thread;
@@ -140,7 +141,7 @@ class Task {
     public function await():Any {
         final token = block(completion);
 
-        if (token is Primitive) {
+        if (token == Primitive.suspended) {
             return completion.wait();
         } else {
             return token;
@@ -152,12 +153,6 @@ class Task {
     }
 }
 
-class Primitive {
-    
-    public static final suspended = new Primitive();
-
-    function new() {}
-}
 
 private class SafeContinuation<T> implements IContinuation<T> {
     final _hx_completion:IContinuation<Any>;
@@ -222,10 +217,9 @@ private class SafeContinuation<T> implements IContinuation<T> {
 
         lock.release();
 
-        return Coroutine.Primitive.suspended;
+        return coro.Primitive.suspended;
     }
 }
-
 private class BlockingContinuation implements IContinuation<Any> {
 	final source:CancellationTokenSource;
 

@@ -42,9 +42,8 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
             } catch (exn:Exception) {
                 _hx_continuation._hx_state = -1;
                 _hx_continuation._hx_error = exn;
-                _hx_continuation._hx_completion.resume(null, exn);
-
-                return null;
+                
+                throw exn;
             }
         }
     };
@@ -140,8 +139,8 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
                     _hx_continuation._hx_state = $v{bbNext.id};
 
                     var _hx_tmp = $ef($a{args});
-                    if (_hx_tmp is Coroutine.Primitive) {
-                        return Coroutine.Primitive.suspended;
+                    if (_hx_tmp == coro.Primitive.suspended) {
+                        return coro.Primitive.suspended;
                     }
                     
                     _hx_continuation._hx_result = _hx_tmp;

@@ -77,7 +77,7 @@ class Main {
 			write(Std.string(getNumber()));
 		}
 
-		// throw new Exception('bye');
+		throw new Exception('bye');
 
 		return 15;
 	}
@@ -123,10 +123,10 @@ class Main {
 	static function main() {
 		trace(Coroutine.start(someAsync));
 
-		final task = Coroutine.launch(cancellationTesting);
+		// final task = Coroutine.launch(cancellationTesting);
 
-		Timer.delay(task.cancel, 2000);
+		// Timer.delay(task.cancel, 2000);
 
-		trace(task.await());
+		// trace(task.await());
 	}
 }
