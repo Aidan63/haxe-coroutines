@@ -31,19 +31,12 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
 
             ${ { expr: EVars(machine.vars), pos: pos} };
 
-            try {
-                if (_hx_continuation._hx_error != null) {
-                    throw _hx_continuation._hx_error;
-                }
-                
-                while (true) {
-                    $e{ machine.expr };
-                }
-            } catch (exn:Exception) {
-                _hx_continuation._hx_state = -1;
-                _hx_continuation._hx_error = exn;
-                
-                throw exn;
+            if (_hx_continuation._hx_error != null) {
+                throw _hx_continuation._hx_error;
+            }
+
+            while (true) {
+                $e{ machine.expr };
             }
         }
     };
@@ -85,7 +78,17 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
             _hx_error  = error;
 
             _hx_context.scheduler.schedule(() -> {
-                @:privateAccess $i{ owningClass }.$funcName($a{ args });
+                try {
+                    final result = @:privateAccess $i{ owningClass }.$funcName($a{ args });
+
+                    if (result == coro.Primitive.suspended) {
+                        return;
+                    }
+
+                    _hx_completion.resume(result, null);
+                } catch (exn:haxe.Exception) {
+                    _hx_completion.resume(null, exn);
+                }
             });
         }
     };
@@ -108,7 +111,6 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
 
                 exprs.push(macro {
                     _hx_continuation._hx_state = -1;
-                    _hx_continuation._hx_completion.resume($last, null);
                     return $last;
                 });
 
@@ -126,7 +128,6 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
                 for (e in bb.elements) exprs.push(e);
                 exprs.push(macro {
                     _hx_continuation._hx_state = -1;
-                    _hx_continuation._hx_completion(null, null);
                     return null;
                 });
 
