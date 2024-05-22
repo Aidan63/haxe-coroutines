@@ -53,7 +53,7 @@ class Main {
 	}
 
 	@:suspend static function spawnThread():Void {
-		return Coroutine.suspend(cont -> {
+		Coroutine.suspend(cont -> {
 			Thread.create(() -> {
 #if cpp
 				trace('Hello from thread ${ untyped Thread.current().handle }');
@@ -113,9 +113,9 @@ class Main {
 	@:suspend static function cooperativeCancellation():Int {
 		trace('starting work');
 
-		while (Coroutine.isCancellationRequested() == false) {
-			accumulated = getNumber();
-		}
+		// while (Coroutine.isCancellationRequested() == false) {
+		// 	accumulated = getNumber();
+		// }
 
 		return accumulated;
 	}

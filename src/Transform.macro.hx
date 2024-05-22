@@ -41,8 +41,8 @@ class BasicBlock {
 		// elements.push(macro var $name:$type);
 	}
 
-	public function assignVar(name, expr) {
-		elements.push(macro _hx_continuation.$name = $expr);
+	public function assignVar(name:String, expr:Expr) {
+		elements.push(macro $i{ name } = $expr);
 	}
 }
 

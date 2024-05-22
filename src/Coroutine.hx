@@ -98,9 +98,11 @@ interface IContinuation<T> {
 	function resume(result:T, error:Exception):Void;
 }
 
+@:build(Macro.build())
 class Coroutine {
-    public static inline function suspend(func:(IContinuation<Any>)->Void, _hx_continuation:IContinuation<Any>):Any {
-        final safe = new SafeContinuation(_hx_continuation);
+    @:suspend public static function suspend(func:(IContinuation<Any>)->Void):Any {
+        final cont = coro.CoroutineIntrinsics.currentCompletion();
+        final safe = new SafeContinuation(cont);
 
         func(safe);
 	
@@ -123,9 +125,9 @@ class Coroutine {
         return new Task(new BlockingContinuation(scheduler), block);
     }
 
-    public static macro function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
-        return macro _hx_continuation._hx_context.token.isCancellationRequested;
-    }
+    // public static function isCancellationRequested():haxe.macro.Expr.ExprOf<Bool> {
+    //     return currentContinuation()._hx_context.token.isCancellationRequested;
+    // }
 }
 
 class Task {
