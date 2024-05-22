@@ -1,6 +1,8 @@
-import Coroutine;
 import haxe.Exception;
+import haxe.exceptions.CancellationException;
+import coro.Coroutine;
 import coro.CoroutineIntrinsics;
+import coro.CancellationTokenSource;
 import sys.thread.Thread;
 import sys.thread.EventLoop;
 

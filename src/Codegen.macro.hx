@@ -11,26 +11,20 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
         throw new Error("Return type hint expected", pos);
     }
 
-    final coroArgs    = fun.args.copy();
-    final cfg         = FlowGraph.build(fun, found);
-    final className   = 'HxCoro_${ funcName }';
-    final clazz       = buildClass(className, funcName, fun);
-    final typePath    = { pack: [], name: className };
-    final complexType = TPath(typePath);
+    final coroArgs = fun.args.copy();
+    final cfg      = FlowGraph.build(fun, found);
 
-    Context.defineType(clazz);
-
-    coroArgs.push({ name: "_hx_completion", type: macro : IContinuation<Any> });
+    coroArgs.push({ name: "_hx_completion", type: macro : coro.IContinuation<Any> });
 
     return {
         args: coroArgs,
         ret : macro : Any,
-        expr: buildStateMachine(cfg.root, fun.expr.pos, complexType, typePath)
+        expr: buildStateMachine(cfg.root, fun.expr.pos, funcName, fun)
     };
 }
 
 function buildClass(className:String, funcName:String, fun:Function):TypeDefinition {
-    final owningClass = Context.getLocalClass().get().name;
+    final owningClass = Context.getLocalClass().get().module;
     final args        = fun.args.map(arg -> {
         if (arg.type == null) {
             return macro null;
@@ -42,11 +36,13 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
         }
     });
 
+    trace(owningClass);
+
     args.push(macro this);
 
-    return macro class $className implements Coroutine.IContinuation<Any> {
-        public final _hx_completion:Coroutine.IContinuation<Any>;
-        public final _hx_context:Coroutine.CoroutineContext;
+    return macro class $className implements coro.IContinuation<Any> {
+        public final _hx_completion:coro.IContinuation<Any>;
+        public final _hx_context:coro.CoroutineContext;
 
         public var _hx_state:Int;
         public var _hx_result:Any;
@@ -81,14 +77,15 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
     };
 }
 
-function buildStateMachine(bbRoot:BasicBlock, pos:Position, complexType:ComplexType, typePath:TypePath) {
+function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun:Function) {
     final cases    = new Array<Case>();
     final varDecls = [];
 
     function loop(bb:BasicBlock) {
-        var exprs = [];
-        for (v in bb.vars)
+        final exprs = [];
+        for (v in bb.vars) {
             varDecls.push(v);
+        }
 
         switch bb.edge {
             case Return:
@@ -233,10 +230,16 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, complexType:ComplexT
         case _:
             loop(bbRoot);
 
-            final eswitch = {
+            final className   = 'HxCoro_${ funcName }';
+            final clazz       = buildClass(className, funcName, fun);
+            final typePath    = { pack: [], name: className };
+            final complexType = TPath(typePath);
+            final eswitch     = {
                 pos: pos,
                 expr: ESwitch(macro _hx_continuation._hx_state, cases, macro throw new haxe.Exception("Invalid state"))
             };
+
+            Context.defineType(clazz);
 
             return macro {
                 final _hx_continuation = if (_hx_completion is $complexType) (cast _hx_completion : $complexType) else new $typePath(_hx_completion);
