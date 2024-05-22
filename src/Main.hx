@@ -1,12 +1,8 @@
-import coro.schedulers.ThreadPoolScheduler;
-import haxe.Timer;
-import sys.thread.FixedThreadPool;
-import sys.thread.IThreadPool;
-import sys.thread.EventLoop;
-import haxe.io.Bytes;
-import sys.thread.Thread;
-import haxe.Exception;
 import Coroutine;
+import haxe.Exception;
+import coro.CoroutineIntrinsics;
+import sys.thread.Thread;
+import sys.thread.EventLoop;
 
 @:build(Macro.build())
 class Main {
@@ -113,20 +109,20 @@ class Main {
 	@:suspend static function cooperativeCancellation():Int {
 		trace('starting work');
 
-		// while (Coroutine.isCancellationRequested() == false) {
-		// 	accumulated = getNumber();
-		// }
+		while (CoroutineIntrinsics.isCancellationRequested() == false) {
+			accumulated = getNumber();
+		}
 
 		return accumulated;
 	}
 
 	static function main() {
-		trace(Coroutine.start(someAsync));
+		// trace(Coroutine.start(someAsync));
 
-		// final task = Coroutine.launch(cancellationTesting);
+		final task = Coroutine.launch(cancellationTesting);
 
-		// Timer.delay(task.cancel, 2000);
+		haxe.Timer.delay(task.cancel, 2000);
 
-		// trace(task.await());
+		trace(task.await());
 	}
 }
