@@ -112,7 +112,7 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun
                 for (e in bb.elements) exprs.push(e);
                 exprs.push(macro {
                     _hx_continuation._hx_state = -1;
-                    return null;
+                    return _hx_continuation._hx_result;
                 });
 
             case Suspend(ef, args, bbNext):
