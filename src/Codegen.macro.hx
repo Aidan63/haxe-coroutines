@@ -13,7 +13,6 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
 
     final coroArgs    = fun.args.copy();
     final cfg         = FlowGraph.build(fun, found);
-    final machine     = buildStateMachine(cfg.root, fun.expr.pos);
     final className   = 'HxCoro_${ funcName }';
     final clazz       = buildClass(className, funcName, fun);
     final typePath    = { pack: [], name: className };
@@ -26,19 +25,7 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
     return {
         args: coroArgs,
         ret : macro : Any,
-        expr: macro {
-            final _hx_continuation = if (_hx_completion is $complexType) (cast _hx_completion : $complexType) else new $typePath(_hx_completion);
-
-            ${ { expr: EVars(machine.vars), pos: pos} };
-
-            if (_hx_continuation._hx_error != null) {
-                throw _hx_continuation._hx_error;
-            }
-
-            while (true) {
-                $e{ machine.expr };
-            }
-        }
+        expr: buildStateMachine(cfg.root, fun.expr.pos, complexType, typePath)
     };
 }
 
@@ -94,7 +81,7 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
     };
 }
 
-function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
+function buildStateMachine(bbRoot:BasicBlock, pos:Position, complexType:ComplexType, typePath:TypePath) {
     final cases    = new Array<Case>();
     final varDecls = [];
 
@@ -213,15 +200,56 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position) {
             expr: macro $b{exprs}
         });
     }
-    loop(bbRoot);
 
-    final eswitch = {
-        pos: pos,
-        expr: ESwitch(macro _hx_continuation._hx_state, cases, macro throw new haxe.Exception("Invalid state"))
-    };
+    return switch bbRoot.edge {
+        case Return:
+            final last  = bbRoot.elements[bbRoot.elements.length - 1];
+            final exprs = [];
+            for (i in 0...bbRoot.elements.length - 1) {
+                exprs.push(bbRoot.elements[i]);
+            }
 
-    return {
-        expr : eswitch,
-        vars : varDecls
-    };
+            exprs.push(macro return $last);
+
+            macro {
+                ${ { expr: EVars(bbRoot.vars), pos: pos} };
+
+                $b{ exprs }
+            }
+        case Throw:
+            final last  = bbRoot.elements[bbRoot.elements.length - 1];
+            final exprs = [];
+            for (i in 0...bbRoot.elements.length - 1) {
+                exprs.push(bbRoot.elements[i]);
+            }
+
+            exprs.push(macro throw $last);
+
+            macro {
+                ${ { expr: EVars(bbRoot.vars), pos: pos} };
+
+                $b{ exprs }
+            }
+        case _:
+            loop(bbRoot);
+
+            final eswitch = {
+                pos: pos,
+                expr: ESwitch(macro _hx_continuation._hx_state, cases, macro throw new haxe.Exception("Invalid state"))
+            };
+
+            return macro {
+                final _hx_continuation = if (_hx_completion is $complexType) (cast _hx_completion : $complexType) else new $typePath(_hx_completion);
+
+                ${ { expr: EVars(varDecls), pos: pos} };
+
+                if (_hx_continuation._hx_error != null) {
+                    throw _hx_continuation._hx_error;
+                }
+
+                while (true) {
+                    $e{ eswitch };
+                }
+            }
+    }
 }
