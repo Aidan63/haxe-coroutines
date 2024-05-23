@@ -209,6 +209,8 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun
             exprs.push(macro return $last);
 
             macro {
+                final _hx_continuation = _hx_completion;
+
                 ${ { expr: EVars(bbRoot.vars), pos: pos} };
 
                 $b{ exprs }
@@ -223,6 +225,8 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun
             exprs.push(macro throw $last);
 
             macro {
+                final _hx_continuation = _hx_completion;
+
                 ${ { expr: EVars(bbRoot.vars), pos: pos} };
 
                 $b{ exprs }

@@ -1,11 +1,11 @@
 package coro;
 
 class CoroutineIntrinsics {
-    public static macro function currentCompletion():haxe.macro.Expr {
-        return macro _hx_completion;
+    public static macro function currentContinuation():haxe.macro.Expr {
+        return macro _hx_continuation;
     }
 
     public static macro function isCancellationRequested():haxe.macro.Expr {
-        return macro _hx_completion._hx_context.token.isCancellationRequested;
+        return macro _hx_continuation._hx_context.token.isCancellationRequested;
     }
 }

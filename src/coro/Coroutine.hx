@@ -1,6 +1,5 @@
 package coro;
 
-import coro.Primitive;
 import coro.schedulers.IScheduler;
 import coro.schedulers.EventLoopScheduler;
 import sys.thread.Thread;
@@ -10,7 +9,7 @@ import haxe.Exception;
 @:build(Macro.build())
 class Coroutine {
     @:suspend public static function suspend(func:(IContinuation<Any>)->Void):Any {
-        final cont = coro.CoroutineIntrinsics.currentCompletion();
+        final cont = coro.CoroutineIntrinsics.currentContinuation();
         final safe = new SafeContinuation(cont);
 
         func(safe);
