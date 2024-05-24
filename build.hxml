@@ -1,7 +1,8 @@
 -cp src
 -main Main
--cpp bin
+-js main.js
 -D analyzer-optimize
 -dce full
 -D dump=pretty
+-L hxnodejs
 --debug

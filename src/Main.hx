@@ -1,10 +1,16 @@
+import js.node.Timers.Timeout;
+import coro.schedulers.NodeScheduler;
+import coro.schedulers.ImmediateScheduler;
+import js.node.Tty;
+import js.node.Process;
 import haxe.Exception;
 import haxe.exceptions.CancellationException;
+import coro.Task;
 import coro.Coroutine;
-import coro.CoroutineIntrinsics;
+import coro.EventLoop;
+import coro.BlockingContinuation;
 import coro.CancellationTokenSource;
-import sys.thread.Thread;
-import sys.thread.EventLoop;
+import coro.schedulers.EventLoopScheduler;
 
 @:build(Macro.build())
 class Main {
@@ -12,32 +18,29 @@ class Main {
 
 	static var accumulated = 0;
 
+	static var events : EventLoop;
+
 	@:suspend static function write(string:String):Int {
 		return Coroutine.suspend(cont -> {
-			Thread.current().events.run(() -> {
-				Sys.println(string);
-
-				cont.resume(string.length, null);
+			js.Node.process.stdout.write(string + '\n', null, () -> {
+				cont.resume(0, null);
 			});
 		});
 	}
 
 	@:suspend static function delay(ms:Int):Void {
 		return Coroutine.suspend(cont -> {
-			var handle       : EventHandler = null;
+			var handle       : Timeout = null;
 			var registration : Registration = null;
 
-			final events = Thread.current().events;
-
-			handle = events.repeat(() -> {
-				events.cancel(handle);
+			handle = js.Node.setTimeout(() -> {
 				registration.unregister();
 
 				cont.resume(null, null);
 			}, ms);
 
 			registration = cont._hx_context.token.register(() -> {
-				events.cancel(handle);
+				js.Node.clearInterval(handle);
 
 				cont.resume(null, new CancellationException('delay has been cancelled'));
 			});
@@ -50,22 +53,22 @@ class Main {
 		});
 	}
 
-	@:suspend static function spawnThread():Void {
-		Coroutine.suspend(cont -> {
-			Thread.create(() -> {
-#if cpp
-				trace('Hello from thread ${ untyped Thread.current().handle }');
-#else
-				trace('Hello from thread ${ Thread.current() }');
-#end
+// 	@:suspend static function spawnThread():Void {
+// 		Coroutine.suspend(cont -> {
+// 			Thread.create(() -> {
+// #if cpp
+// 				trace('Hello from thread ${ untyped Thread.current().handle }');
+// #else
+// 				trace('Hello from thread ${ Thread.current() }');
+// #end
 
-				cont.resume(null, null);
-			});
-		});
-	}
+// 				cont.resume(null, null);
+// 			});
+// 		});
+// 	}
 
 	@:suspend static function someAsync():Int {
-		trace("hi");
+		write("hi");
 
 		while (getNumber() < 10) {
 			write('wait for it...');
@@ -80,51 +83,61 @@ class Main {
 		return 15;
 	}
 
-	@:suspend static function schedulerTesting():Int {
-#if cpp
-		trace('coro from thread ${ untyped Thread.current().handle }');
-#else
-		trace('coro from thread ${ Thread.current() }');
-#end
+// 	@:suspend static function schedulerTesting():Int {
+// #if cpp
+// 		trace('coro from thread ${ untyped Thread.current().handle }');
+// #else
+// 		trace('coro from thread ${ Thread.current() }');
+// #end
 
-		spawnThread();
+// 		spawnThread();
 
-#if cpp
-		trace('coro from thread ${ untyped Thread.current().handle }');
-#else
-		trace('coro from thread ${ Thread.current() }');
-#end
+// #if cpp
+// 		trace('coro from thread ${ untyped Thread.current().handle }');
+// #else
+// 		trace('coro from thread ${ Thread.current() }');
+// #end
 
-		return 0;
-	}
+// 		return 0;
+// 	}
 
-	@:suspend static function cancellationTesting():Int {
-		trace('starting long delay...');
+// 	@:suspend static function cancellationTesting():Int {
+// 		trace('starting long delay...');
 
-		delay(10000);
+// 		delay(10000);
 
-		trace('delay over!');
+// 		trace('delay over!');
 
-		return 0;
-	}
+// 		return 0;
+// 	}
 
-	@:suspend static function cooperativeCancellation():Int {
-		trace('starting work');
+// 	@:suspend static function cooperativeCancellation():Int {
+// 		trace('starting work');
 
-		while (CoroutineIntrinsics.isCancellationRequested() == false) {
-			accumulated = getNumber();
-		}
+// 		while (CoroutineIntrinsics.isCancellationRequested() == false) {
+// 			accumulated = getNumber();
+// 		}
 
-		return accumulated;
-	}
+// 		return accumulated;
+// 	}
 
 	static function main() {
-		// trace(Coroutine.start(someAsync));
+		events = new EventLoop();
 
-		final task = Coroutine.launch(cancellationTesting);
+		someAsync(new BlockingContinuation(new NodeScheduler(), null));
 
-		haxe.Timer.delay(task.cancel, 2000);
+		// final task = new Task(new BlockingContinuation(new EventLoopScheduler(events), events), someAsync);
 
-		trace(task.await());
+		// trace(task.await());
+
+		// trace(Coroutine.startWith(someAsync, new coro.schedulers.ImmediateScheduler()));
+
+		// final cont = CoroutineIntrinsics.create(someAsync, null);
+
+		// final task = Coroutine.launch(cancellationTesting);
+
+		// haxe.Timer.delay(task.cancel, 2000);
+
+		// trace(task.await());
 	}
 }
