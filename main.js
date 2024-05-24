@@ -6,6 +6,33 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var HxCoro_$cancellationTesting = function(completion) {
+	this._hx_completion = completion;
+	this._hx_context = completion._hx_context;
+	this._hx_state = 0;
+	this._hx_result = null;
+	this._hx_error = null;
+};
+HxCoro_$cancellationTesting.__name__ = "HxCoro_cancellationTesting";
+HxCoro_$cancellationTesting.prototype = {
+	resume: function(result,error) {
+		var _gthis = this;
+		this._hx_result = result;
+		this._hx_error = error;
+		this._hx_context.scheduler.schedule(function() {
+			try {
+				var result = Main.cancellationTesting(_gthis);
+				if(result == coro_Primitive.suspended) {
+					return;
+				}
+				_gthis._hx_completion.resume(result,null);
+			} catch( _g ) {
+				var _g1 = haxe_Exception.caught(_g);
+				_gthis._hx_completion.resume(null,_g1);
+			}
+		});
+	}
+};
 var HxCoro_$delay = function(completion) {
 	this._hx_completion = completion;
 	this._hx_context = completion._hx_context;
@@ -33,87 +60,6 @@ HxCoro_$delay.prototype = {
 		});
 	}
 };
-var HxCoro_$getNumber = function(completion) {
-	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
-	this._hx_state = 0;
-	this._hx_result = null;
-	this._hx_error = null;
-};
-HxCoro_$getNumber.__name__ = "HxCoro_getNumber";
-HxCoro_$getNumber.prototype = {
-	resume: function(result,error) {
-		var _gthis = this;
-		this._hx_result = result;
-		this._hx_error = error;
-		this._hx_context.scheduler.schedule(function() {
-			try {
-				var result = Main.getNumber(_gthis);
-				if(result == coro_Primitive.suspended) {
-					return;
-				}
-				_gthis._hx_completion.resume(result,null);
-			} catch( _g ) {
-				var _g1 = haxe_Exception.caught(_g);
-				_gthis._hx_completion.resume(null,_g1);
-			}
-		});
-	}
-};
-var HxCoro_$someAsync = function(completion) {
-	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
-	this._hx_state = 0;
-	this._hx_result = null;
-	this._hx_error = null;
-};
-HxCoro_$someAsync.__name__ = "HxCoro_someAsync";
-HxCoro_$someAsync.prototype = {
-	resume: function(result,error) {
-		var _gthis = this;
-		this._hx_result = result;
-		this._hx_error = error;
-		this._hx_context.scheduler.schedule(function() {
-			try {
-				var result = Main.someAsync(_gthis);
-				if(result == coro_Primitive.suspended) {
-					return;
-				}
-				_gthis._hx_completion.resume(result,null);
-			} catch( _g ) {
-				var _g1 = haxe_Exception.caught(_g);
-				_gthis._hx_completion.resume(null,_g1);
-			}
-		});
-	}
-};
-var HxCoro_$write = function(completion) {
-	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
-	this._hx_state = 0;
-	this._hx_result = null;
-	this._hx_error = null;
-};
-HxCoro_$write.__name__ = "HxCoro_write";
-HxCoro_$write.prototype = {
-	resume: function(result,error) {
-		var _gthis = this;
-		this._hx_result = result;
-		this._hx_error = error;
-		this._hx_context.scheduler.schedule(function() {
-			try {
-				var result = Main.write(null,_gthis);
-				if(result == coro_Primitive.suspended) {
-					return;
-				}
-				_gthis._hx_completion.resume(result,null);
-			} catch( _g ) {
-				var _g1 = haxe_Exception.caught(_g);
-				_gthis._hx_completion.resume(null,_g1);
-			}
-		});
-	}
-};
 var HxOverrides = function() { };
 HxOverrides.__name__ = "HxOverrides";
 HxOverrides.remove = function(a,obj) {
@@ -129,33 +75,6 @@ HxOverrides.now = function() {
 };
 var Main = function() { };
 Main.__name__ = "Main";
-Main.write = function(string,_hx_completion) {
-	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$write) ? _hx_completion : new HxCoro_$write(_hx_completion);
-	var tmp0;
-	if(_hx_continuation._hx_error != null) {
-		throw haxe_Exception.thrown(_hx_continuation._hx_error);
-	}
-	while(true) switch(_hx_continuation._hx_state) {
-	case 0:
-		_hx_continuation._hx_state = 1;
-		var _hx_tmp = coro_Coroutine.suspend(function(cont) {
-			process.stdout.write(string + "\n",null,function() {
-				cont.resume(0,null);
-			});
-		},_hx_continuation);
-		if(_hx_tmp == coro_Primitive.suspended) {
-			return coro_Primitive.suspended;
-		}
-		_hx_continuation._hx_result = _hx_tmp;
-		break;
-	case 1:
-		tmp0 = _hx_continuation._hx_result;
-		_hx_continuation._hx_state = -1;
-		return tmp0;
-	default:
-		throw new haxe_Exception("Invalid state");
-	}
-};
 Main.delay = function(ms,_hx_completion) {
 	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$delay) ? _hx_completion : new HxCoro_$delay(_hx_completion);
 	var tmp0;
@@ -190,138 +109,55 @@ Main.delay = function(ms,_hx_completion) {
 		throw new haxe_Exception("Invalid state");
 	}
 };
-Main.getNumber = function(_hx_completion) {
-	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$getNumber) ? _hx_completion : new HxCoro_$getNumber(_hx_completion);
-	var tmp0;
+Main.cancellationTesting = function(_hx_completion) {
+	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$cancellationTesting) ? _hx_completion : new HxCoro_$cancellationTesting(_hx_completion);
 	if(_hx_continuation._hx_error != null) {
 		throw haxe_Exception.thrown(_hx_continuation._hx_error);
 	}
 	while(true) switch(_hx_continuation._hx_state) {
 	case 0:
+		console.log("src/Main.hx:98:","starting long delay...");
 		_hx_continuation._hx_state = 1;
-		var _hx_tmp = coro_Coroutine.suspend(function(cont) {
-			cont.resume(++Main.nextNumber,null);
-		},_hx_continuation);
+		var _hx_tmp = Main.delay(10000,_hx_continuation);
 		if(_hx_tmp == coro_Primitive.suspended) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp;
 		break;
 	case 1:
-		tmp0 = _hx_continuation._hx_result;
+		console.log("src/Main.hx:102:","delay over!");
 		_hx_continuation._hx_state = -1;
-		return tmp0;
-	default:
-		throw new haxe_Exception("Invalid state");
-	}
-};
-Main.someAsync = function(_hx_completion) {
-	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$someAsync) ? _hx_completion : new HxCoro_$someAsync(_hx_completion);
-	var tmp1;
-	var tmp4;
-	if(_hx_continuation._hx_error != null) {
-		throw haxe_Exception.thrown(_hx_continuation._hx_error);
-	}
-	while(true) switch(_hx_continuation._hx_state) {
-	case 0:
-		_hx_continuation._hx_state = 1;
-		var _hx_tmp = Main.write("hi",_hx_continuation);
-		if(_hx_tmp == coro_Primitive.suspended) {
-			return coro_Primitive.suspended;
-		}
-		_hx_continuation._hx_result = _hx_tmp;
-		break;
-	case 1:
-		_hx_continuation._hx_state = 2;
-		break;
-	case 2:
-		_hx_continuation._hx_state = 3;
-		var _hx_tmp1 = Main.getNumber(_hx_continuation);
-		if(_hx_tmp1 == coro_Primitive.suspended) {
-			return coro_Primitive.suspended;
-		}
-		_hx_continuation._hx_result = _hx_tmp1;
-		break;
-	case 3:
-		tmp1 = _hx_continuation._hx_result;
-		if(tmp1 < 10) {
-			_hx_continuation._hx_state = 4;
-		} else {
-			_hx_continuation._hx_state = 9;
-		}
-		break;
-	case 4:
-		_hx_continuation._hx_state = 5;
-		var _hx_tmp2 = Main.write("wait for it...",_hx_continuation);
-		if(_hx_tmp2 == coro_Primitive.suspended) {
-			return coro_Primitive.suspended;
-		}
-		_hx_continuation._hx_result = _hx_tmp2;
-		break;
-	case 5:
-		_hx_continuation._hx_state = 6;
-		var _hx_tmp3 = Main.delay(1000,_hx_continuation);
-		if(_hx_tmp3 == coro_Primitive.suspended) {
-			return coro_Primitive.suspended;
-		}
-		_hx_continuation._hx_result = _hx_tmp3;
-		break;
-	case 6:
-		_hx_continuation._hx_state = 7;
-		var _hx_tmp4 = Main.getNumber(_hx_continuation);
-		if(_hx_tmp4 == coro_Primitive.suspended) {
-			return coro_Primitive.suspended;
-		}
-		_hx_continuation._hx_result = _hx_tmp4;
-		break;
-	case 7:
-		tmp4 = _hx_continuation._hx_result;
-		_hx_continuation._hx_state = 8;
-		var _hx_tmp5 = Main.write(Std.string(tmp4),_hx_continuation);
-		if(_hx_tmp5 == coro_Primitive.suspended) {
-			return coro_Primitive.suspended;
-		}
-		_hx_continuation._hx_result = _hx_tmp5;
-		break;
-	case 8:
-		_hx_continuation._hx_state = 2;
-		break;
-	case 9:
-		_hx_continuation._hx_state = -1;
-		throw new haxe_Exception("bye");
+		return 0;
 	default:
 		throw new haxe_Exception("Invalid state");
 	}
 };
 Main.main = function() {
-	Main.events = new coro_EventLoop();
-	Main.someAsync(new coro_BlockingContinuation(new coro_schedulers_NodeScheduler(),null));
+	var cont = new NodeContinuation(new coro_schedulers_NodeScheduler());
+	new HxCoro_$cancellationTesting(cont).resume(null,null);
+	global.setTimeout($bind(cont,cont.cancel),2000);
 };
 Math.__name__ = "Math";
+var NodeContinuation = function(scheduler) {
+	this.source = new coro_CancellationTokenSource();
+	this._hx_context = new coro_CoroutineContext(scheduler,this.source.token);
+};
+NodeContinuation.__name__ = "NodeContinuation";
+NodeContinuation.prototype = {
+	resume: function(result,error) {
+		if(error != null) {
+			throw haxe_Exception.thrown(error);
+		}
+		console.log("src/NodeContinuation.js.hx:21:",result == null ? "null" : Std.string(result));
+	}
+	,cancel: function() {
+		this.source.cancel();
+	}
+};
 var Std = function() { };
 Std.__name__ = "Std";
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
-};
-var coro_BlockingContinuation = function(scheduler,events) {
-	this.events = events;
-	this.source = new coro_CancellationTokenSource();
-	this._hx_context = new coro_CoroutineContext(scheduler,this.source.token);
-	this.running = true;
-	this.result = 0;
-	this.error = null;
-};
-coro_BlockingContinuation.__name__ = "coro.BlockingContinuation";
-coro_BlockingContinuation.prototype = {
-	resume: function(result,error) {
-		this.running = false;
-		this.result = result;
-		this.error = error;
-		if(this.error != null) {
-			throw haxe_Exception.thrown(this.error);
-		}
-		console.log("src/coro/BlockingContinuation.hx:35:",this.result);
-	}
 };
 var coro_CancellationToken = function(source) {
 	this.source = source;
@@ -358,6 +194,19 @@ coro_CancellationTokenSource.prototype = {
 		return coro_Registration._new(function() {
 			HxOverrides.remove(_gthis.registrations,func);
 		});
+	}
+	,cancel: function() {
+		if(this.get_isCancellationRequested()) {
+			throw new haxe_exceptions_CancellationException("Cancellation token has already been cancelled");
+		}
+		this.cancelled = true;
+		var _g = 0;
+		var _g1 = this.registrations;
+		while(_g < _g1.length) {
+			var func = _g1[_g];
+			++_g;
+			func();
+		}
 	}
 };
 var coro_Coroutine = function() { };
@@ -406,11 +255,6 @@ var coro_CoroutineContext = function(scheduler,token) {
 	this.token = token;
 };
 coro_CoroutineContext.__name__ = "coro.CoroutineContext";
-var coro_EventLoop = function() {
-	this.isMainThread = !coro_EventLoop.CREATED;
-	coro_EventLoop.CREATED = true;
-};
-coro_EventLoop.__name__ = "coro.EventLoop";
 var coro_Primitive = function() {
 };
 coro_Primitive.__name__ = "coro.Primitive";
@@ -420,28 +264,6 @@ coro_schedulers_NodeScheduler.__name__ = "coro.schedulers.NodeScheduler";
 coro_schedulers_NodeScheduler.prototype = {
 	schedule: function(func) {
 		global.setImmediate(func);
-	}
-};
-var haxe_EntryPoint = function() { };
-haxe_EntryPoint.__name__ = "haxe.EntryPoint";
-haxe_EntryPoint.processEvents = function() {
-	while(true) {
-		var f = haxe_EntryPoint.pending.shift();
-		if(f == null) {
-			break;
-		}
-		f();
-	}
-	var time = haxe_MainLoop.tick();
-	if(!haxe_MainLoop.hasEvents() && haxe_EntryPoint.threadCount == 0) {
-		return -1;
-	}
-	return time;
-};
-haxe_EntryPoint.run = function() {
-	var nextTick = haxe_EntryPoint.processEvents();
-	if(nextTick >= 0) {
-		setTimeout(haxe_EntryPoint.run,nextTick * 1000);
 	}
 };
 var haxe_Exception = function(message,previous,native) {
@@ -482,112 +304,6 @@ haxe_Exception.prototype = $extend(Error.prototype,{
 		return this.__nativeException;
 	}
 });
-var haxe_MainEvent = function(f,p) {
-	this.isBlocking = true;
-	this.f = f;
-	this.priority = p;
-	this.nextRun = -Infinity;
-};
-haxe_MainEvent.__name__ = "haxe.MainEvent";
-var haxe_MainLoop = function() { };
-haxe_MainLoop.__name__ = "haxe.MainLoop";
-haxe_MainLoop.hasEvents = function() {
-	var p = haxe_MainLoop.pending;
-	while(p != null) {
-		if(p.isBlocking) {
-			return true;
-		}
-		p = p.next;
-	}
-	return false;
-};
-haxe_MainLoop.sortEvents = function() {
-	var list = haxe_MainLoop.pending;
-	if(list == null) {
-		return;
-	}
-	var insize = 1;
-	var nmerges;
-	var psize = 0;
-	var qsize = 0;
-	var p;
-	var q;
-	var e;
-	var tail;
-	while(true) {
-		p = list;
-		list = null;
-		tail = null;
-		nmerges = 0;
-		while(p != null) {
-			++nmerges;
-			q = p;
-			psize = 0;
-			var _g = 0;
-			var _g1 = insize;
-			while(_g < _g1) {
-				++_g;
-				++psize;
-				q = q.next;
-				if(q == null) {
-					break;
-				}
-			}
-			qsize = insize;
-			while(psize > 0 || qsize > 0 && q != null) {
-				if(psize == 0) {
-					e = q;
-					q = q.next;
-					--qsize;
-				} else if(qsize == 0 || q == null || (p.priority > q.priority || p.priority == q.priority && p.nextRun <= q.nextRun)) {
-					e = p;
-					p = p.next;
-					--psize;
-				} else {
-					e = q;
-					q = q.next;
-					--qsize;
-				}
-				if(tail != null) {
-					tail.next = e;
-				} else {
-					list = e;
-				}
-				e.prev = tail;
-				tail = e;
-			}
-			p = q;
-		}
-		tail.next = null;
-		if(nmerges <= 1) {
-			break;
-		}
-		insize *= 2;
-	}
-	list.prev = null;
-	haxe_MainLoop.pending = list;
-};
-haxe_MainLoop.tick = function() {
-	haxe_MainLoop.sortEvents();
-	var e = haxe_MainLoop.pending;
-	var hrtime = process.hrtime();
-	var now = hrtime[0] + hrtime[1] / 1e9;
-	var wait = 1e9;
-	while(e != null) {
-		var next = e.next;
-		var wt = e.nextRun - now;
-		if(wt <= 0) {
-			wait = 0;
-			if(e.f != null) {
-				e.f();
-			}
-		} else if(wait > wt) {
-			wait = wt;
-		}
-		e = next;
-	}
-	return wait;
-};
 var haxe_ValueException = function(value,previous,native) {
 	haxe_Exception.call(this,String(value),previous,native);
 	this.value = value;
@@ -682,20 +398,17 @@ js_Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
+var $_;
+function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $global.$haxeUID++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = m.bind(o); o.hx__closures__[m.__id__] = f; } return f; }
+$global.$haxeUID |= 0;
 if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : false) {
 	HxOverrides.now = performance.now.bind(performance);
 }
 String.__name__ = "String";
 Array.__name__ = "Array";
 js_Boot.__toStr = ({ }).toString;
-Main.nextNumber = 0;
 coro_Primitive.suspended = new coro_Primitive();
-haxe_EntryPoint.pending = [];
-haxe_EntryPoint.threadCount = 0;
-{
-	Main.main();
-	haxe_EntryPoint.run();
-}
-})({});
+Main.main();
+})(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 
 //# sourceMappingURL=main.js.map

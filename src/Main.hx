@@ -1,24 +1,17 @@
+import coro.CoroutineIntrinsics;
 import js.node.Timers.Timeout;
 import coro.schedulers.NodeScheduler;
 import coro.schedulers.ImmediateScheduler;
-import js.node.Tty;
-import js.node.Process;
 import haxe.Exception;
 import haxe.exceptions.CancellationException;
-import coro.Task;
 import coro.Coroutine;
-import coro.EventLoop;
-import coro.BlockingContinuation;
 import coro.CancellationTokenSource;
-import coro.schedulers.EventLoopScheduler;
 
 @:build(Macro.build())
 class Main {
 	static var nextNumber = 0;
 
 	static var accumulated = 0;
-
-	static var events : EventLoop;
 
 	@:suspend static function write(string:String):Int {
 		return Coroutine.suspend(cont -> {
@@ -101,30 +94,32 @@ class Main {
 // 		return 0;
 // 	}
 
-// 	@:suspend static function cancellationTesting():Int {
-// 		trace('starting long delay...');
+	@:suspend static function cancellationTesting():Int {
+		trace('starting long delay...');
 
-// 		delay(10000);
+		delay(10000);
 
-// 		trace('delay over!');
+		trace('delay over!');
 
-// 		return 0;
-// 	}
+		return 0;
+	}
 
-// 	@:suspend static function cooperativeCancellation():Int {
-// 		trace('starting work');
+	@:suspend static function cooperativeCancellation():Int {
+		trace('starting work');
 
-// 		while (CoroutineIntrinsics.isCancellationRequested() == false) {
-// 			accumulated = getNumber();
-// 		}
+		while (CoroutineIntrinsics.isCancellationRequested() == false) {
+			accumulated = getNumber();
+		}
 
-// 		return accumulated;
-// 	}
+		return accumulated;
+	}
 
 	static function main() {
-		events = new EventLoop();
+		final cont = new NodeContinuation(new NodeScheduler());
 
-		someAsync(new BlockingContinuation(new NodeScheduler(), null));
+		CoroutineIntrinsics.create(cancellationTesting, cont).resume(null, null);
+		
+		js.Node.setTimeout(cont.cancel, 2000);
 
 		// final task = new Task(new BlockingContinuation(new EventLoopScheduler(events), events), someAsync);
 

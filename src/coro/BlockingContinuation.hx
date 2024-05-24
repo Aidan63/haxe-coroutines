@@ -1,20 +1,17 @@
 package coro;
 
-// import sys.thread.Thread;
+import sys.thread.Thread;
 import haxe.Exception;
 
 class BlockingContinuation implements IContinuation<Any> {
 	final source:CancellationTokenSource;
-	final events:EventLoop;
 
 	public final _hx_context:CoroutineContext;
 	var running : Bool;
 	var result : Int;
 	var error : Exception;
 
-	public function new(scheduler, events) {
-		this.events = events;
-
+	public function new(scheduler) {
 		source      = new CancellationTokenSource();
 		_hx_context = new CoroutineContext(scheduler, source.token);
 		running     = true;
@@ -27,17 +24,11 @@ class BlockingContinuation implements IContinuation<Any> {
 
 		this.result = result;
 		this.error  = error;
-
-		if (this.error != null) {
-			throw this.error;
-		}
-
-		trace(this.result);
 	}
 
 	public function wait():Any {
 		while (running) {
-			events.progress();
+			Thread.current().events.progress();
 		}
 
 		if (error != null) {

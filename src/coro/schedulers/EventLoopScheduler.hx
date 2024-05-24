@@ -1,6 +1,6 @@
 package coro.schedulers;
 
-import coro.EventLoop;
+import sys.thread.EventLoop;
 
 class EventLoopScheduler implements IScheduler {
     final loop : EventLoop;
