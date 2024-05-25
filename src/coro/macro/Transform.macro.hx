@@ -114,7 +114,7 @@ class FlowGraph {
 					bb = blockElement(bb, e);
 				bb;
 
-			case EFunction(_, _) | EConst(_) | EField(_, _) |  ECall(_,_) | EBinop(_, _, _) | EUnop(_, _, _) | EParenthesis(_) | EArray(_, _) | EArrayDecl(_) | ECast(_, _) | ECheckType(_, _) | EObjectDecl(_) | ENew(_, _):
+			case EFunction(_, _) | EConst(_) | EField(_, _) |  ECall(_,_) | EBinop(_, _, _) | EUnop(_, _, _) | EParenthesis(_) | EArray(_, _) | EArrayDecl(_) | ECast(_, _) | ECheckType(_, _) | EObjectDecl(_) | ENew(_, _) | EUntyped(_):
 				var r = value(bb, e);
 				r.bb.addElement(r.e);
 				r.bb;
@@ -209,7 +209,7 @@ class FlowGraph {
 				}
 				bbNext;
 
-			case EDisplay(_,_) | EFor(_,_) | ESwitch(_,_,_) | ETry(_,_) | EUntyped(_) | EWhile(_,_,_):
+			case EDisplay(_,_) | EFor(_,_) | ESwitch(_,_,_) | ETry(_,_) | EWhile(_,_,_):
 				throw new Error('${e.expr.getName()} not implemented', e.pos);
 		}
 	}
@@ -218,7 +218,7 @@ class FlowGraph {
 
 	function value(bb:BasicBlock, e:Expr):{bb:BasicBlock, e:Expr} {
 		return switch e.expr {
-			case EConst(_) | EBlock([]) | EIs(_, _) | EFunction(_, _):
+			case EConst(_) | EBlock([]) | EIs(_, _) | EFunction(_, _) | EUntyped(_):
 				{bb: bb, e: e};
 
 			case EBlock(el):
@@ -352,7 +352,7 @@ class FlowGraph {
 
 				{bb: bbNext, e: macro $i{tmpVarName}};
 
-			case ESwitch(_,_,_) | EThrow(_) | ETry(_,_) | EUntyped(_):
+			case ESwitch(_,_,_) | EThrow(_) | ETry(_,_):
 				throw new Error('${e.expr.getName()} not implemented', e.pos);
 		}
 	}

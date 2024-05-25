@@ -18,6 +18,8 @@ class Main extends Test {
 
 	static var accumulated = 0;
 
+	static var threads = new Array<String>();
+
 	@:suspend static function write(string:String):Int {
 		return Coroutine.suspend(cont -> {
 			Thread.current().events.run(() -> {
@@ -88,6 +90,36 @@ class Main extends Test {
 		return accumulated;
 	}
 
+	@:suspend static function spawnThread():Void {
+		Coroutine.suspend(cont -> {
+			Thread.create(() -> {
+#if cpp
+				threads.push(untyped Thread.current().handle);
+#else
+				threads.push(Thread.current());
+#end
+
+				cont.resume(null, null);
+			});
+		});
+	}
+
+	@:suspend static function schedulerTesting():Void {
+#if cpp
+		threads.push(untyped Thread.current().handle);
+#else
+		threads.push(Thread.current());
+#end
+
+		spawnThread();
+
+#if cpp
+		threads.push(untyped Thread.current().handle);
+#else
+		threads.push(Thread.current());
+#end
+	}
+
 	function new() {
 		super();
 	}
@@ -95,6 +127,7 @@ class Main extends Test {
 	function setup() {
 		nextNumber  = 0;
 		accumulated = 0;
+		threads     = [];
 	}
 
 	@:timeout(1000)
@@ -152,6 +185,22 @@ class Main extends Test {
 
         Assert.exception(cont.wait, CancellationException);
     }
+
+	function test_scheduler(async:Async) {
+		final cont = new CallbackContinuation(new EventLoopScheduler(Thread.current().events), (result, error) -> {
+			Assert.isNull(error);
+			Assert.isNull(result);
+
+			Assert.equals(3, threads.length);
+			Assert.equals(threads[0], threads[2]);
+			Assert.notEquals(threads[1], threads[0]);
+			Assert.notEquals(threads[1], threads[2]);
+
+			async.done();
+		});
+
+		CoroutineIntrinsics.create(schedulerTesting, cont).resume(null, null);
+	}
 
 	static function main() {
 		utest.UTest.run([ new Main() ]);
