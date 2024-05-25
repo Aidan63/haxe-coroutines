@@ -66,7 +66,7 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
                 try {
                     final result = @:privateAccess $i{ owningClass }.$funcName($a{ args });
 
-                    if (result == coro.Primitive.suspended) {
+                    if (result is coro.Primitive) {
                         return;
                     }
 
@@ -126,7 +126,7 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun
                     _hx_continuation._hx_state = $v{bbNext.id};
 
                     var _hx_tmp = $ef($a{args});
-                    if (_hx_tmp == coro.Primitive.suspended) {
+                    if (_hx_tmp is coro.Primitive) {
                         return coro.Primitive.suspended;
                     }
                     
