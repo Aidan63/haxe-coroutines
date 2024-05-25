@@ -1,0 +1,4 @@
+build.hxml
+
+-L hxnodejs
+--js main.js

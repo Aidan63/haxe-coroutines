@@ -1,11 +1,10 @@
-import sys.thread.Thread;
-import sys.thread.EventLoop;
+import js.node.Timers;
 import coro.Coroutine;
 import coro.IContinuation;
 import coro.CoroutineContext;
 import coro.CoroutineIntrinsics;
+import coro.schedulers.NodeScheduler;
 import coro.CancellationTokenSource;
-import coro.schedulers.EventLoopScheduler;
 import haxe.Exception;
 import haxe.exceptions.CancellationException;
 import utest.Test;
@@ -20,30 +19,25 @@ class Main extends Test {
 
 	@:suspend static function write(string:String):Int {
 		return Coroutine.suspend(cont -> {
-			Thread.current().events.run(() -> {
-				Sys.println(string);
-
-				cont.resume(string.length, null);
+			js.Node.process.stdout.write(string + '\n', null, () -> {
+				cont.resume(0, null);
 			});
 		});
 	}
 
 	@:suspend static function delay(ms:Int):Void {
 		return Coroutine.suspend(cont -> {
-			var handle       : EventHandler = null;
+			var handle       : Timeout = null;
 			var registration : Registration = null;
 
-			final events = Thread.current().events;
-
-			handle = events.repeat(() -> {
-				events.cancel(handle);
+			handle = js.Node.setTimeout(() -> {
 				registration.unregister();
 
 				cont.resume(null, null);
 			}, ms);
 
 			registration = cont._hx_context.token.register(() -> {
-				events.cancel(handle);
+				js.Node.clearInterval(handle);
 
 				cont.resume(null, new CancellationException('delay has been cancelled'));
 			});
@@ -99,7 +93,7 @@ class Main extends Test {
 
 	@:timeout(1000)
 	function test_complex_continuation(async:Async) {
-		final cont = new CallbackContinuation(new EventLoopScheduler(Thread.current().events), (result, error) -> {
+		final cont = new CallbackContinuation(new NodeScheduler(), (result, error) -> {
 			Assert.isNull(error);
 			Assert.equals(result, 15);
 
@@ -110,7 +104,7 @@ class Main extends Test {
 	}
 
 	function test_cancellation(async:Async) {
-		final cont = new CallbackContinuation(new EventLoopScheduler(Thread.current().events), (result, error) -> {
+		final cont = new CallbackContinuation(new NodeScheduler(), (result, error) -> {
 			Assert.isNull(result);
 			Assert.isOfType(error, CancellationException);
 
@@ -119,11 +113,11 @@ class Main extends Test {
 
 		CoroutineIntrinsics.create(cancellationTesting, cont).resume(null, null);
 		
-		haxe.Timer.delay(cont.cancel, 100);
+		js.Node.setTimeout(cont.cancel, 100);
 	}
 
 	function test_cooperative_cancellation(async:Async) {
-		final cont = new CallbackContinuation(new EventLoopScheduler(Thread.current().events), (result, error) -> {
+		final cont = new CallbackContinuation(new NodeScheduler(), (result, error) -> {
 			Assert.isNull(error);
 			Assert.isTrue((result:Int) > 0);
 
@@ -132,29 +126,34 @@ class Main extends Test {
 
 		CoroutineIntrinsics.create(cooperativeCancellation, cont).resume(null, null);
 		
-        haxe.Timer.delay(cont.cancel, 100);
+		js.Node.setTimeout(cont.cancel, 100);
 	}
-
-    function test_blocking_result() {
-        final cont = new BlockingContinuation(new EventLoopScheduler(Thread.current().events));
-
-		CoroutineIntrinsics.create(someAsync, cont).resume(null, null);
-
-        Assert.equals(cont.wait(), 15);
-    }
-
-    function test_blocking_throw() {
-        final cont = new BlockingContinuation(new EventLoopScheduler(Thread.current().events));
-
-		CoroutineIntrinsics.create(someAsync, cont).resume(null, null);
-
-        haxe.Timer.delay(cont.cancel, 100);
-
-        Assert.exception(cont.wait, CancellationException);
-    }
 
 	static function main() {
 		utest.UTest.run([ new Main() ]);
+	}
+}
+
+private class NodeContinuation implements IContinuation<Any> {
+    final source : CancellationTokenSource;
+
+    public final _hx_context:CoroutineContext;
+
+    public function new(scheduler) {
+        source      = new CancellationTokenSource();
+		_hx_context = new CoroutineContext(scheduler, source.token);
+    }
+    
+    public function resume(result:Any, error:Exception) {
+        if (error != null) {
+			throw error;
+		}
+
+		trace(result);
+    }
+
+    public function cancel() {
+		source.cancel();
 	}
 }
 
@@ -177,46 +176,6 @@ private class CallbackContinuation implements IContinuation<Any> {
     }
 
     public function cancel() {
-		source.cancel();
-	}
-}
-
-private class BlockingContinuation implements IContinuation<Any> {
-	final source:CancellationTokenSource;
-
-	public final _hx_context:CoroutineContext;
-	var running : Bool;
-	var result : Int;
-	var error : Exception;
-
-	public function new(scheduler) {
-		source      = new CancellationTokenSource();
-		_hx_context = new CoroutineContext(scheduler, source.token);
-		running     = true;
-		result      = 0;
-		error       = null;
-	}
-
-	public function resume(result:Any, error:Exception) {
-		running = false;
-
-		this.result = result;
-		this.error  = error;
-	}
-
-	public function wait():Any {
-		while (running) {
-			Thread.current().events.progress();
-		}
-
-		if (error != null) {
-			throw error;
-		} else {
-			return cast result;
-		}
-	}
-
-	public function cancel() {
 		source.cancel();
 	}
 }

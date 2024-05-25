@@ -17,23 +17,22 @@ class Coroutine {
 		return safe.getOrThrow();
     }
 
-    public static function start(block:IContinuation<Any>->Any):Any {
-        return startWith(block, new EventLoopScheduler(Thread.current().events));
-    }
+    // public static function start(block:IContinuation<Any>->Any):Any {
+    //     return startWith(block, new EventLoopScheduler(Thread.current().events));
+    // }
 
-    public static function startWith(block:IContinuation<Any>->Any, scheduler:IScheduler) {
-        return launchWith(block, scheduler).await();
-    }
+    // public static function startWith(block:IContinuation<Any>->Any, scheduler:IScheduler) {
+    //     return launchWith(block, scheduler).await();
+    // }
 
-    public static function launch(block:IContinuation<Any>->Any):Task {
-        return new Task(new BlockingContinuation(new EventLoopScheduler(Thread.current().events)), block);
-    }
+    // public static function launch(block:IContinuation<Any>->Any):Task {
+    //     return new Task(new BlockingContinuation(new EventLoopScheduler(Thread.current().events)), block);
+    // }
 
-    public static function launchWith(block:IContinuation<Any>->Any, scheduler:IScheduler):Task {
-        return new Task(new BlockingContinuation(scheduler), block);
-    }
+    // public static function launchWith(block:IContinuation<Any>->Any, scheduler:IScheduler):Task {
+    //     return new Task(new BlockingContinuation(scheduler), block);
+    // }
 }
-
 
 private class SafeContinuation<T> implements IContinuation<T> {
     final _hx_completion:IContinuation<Any>;
