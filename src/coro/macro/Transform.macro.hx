@@ -1,3 +1,5 @@
+package coro.macro;
+
 import haxe.ds.GenericStack;
 import haxe.macro.Context;
 import haxe.macro.Expr;

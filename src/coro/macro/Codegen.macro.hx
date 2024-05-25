@@ -1,4 +1,6 @@
-import Transform;
+package coro.macro;
+
+import coro.macro.Transform;
 import haxe.macro.Printer;
 import haxe.macro.Context;
 import haxe.macro.Expr;

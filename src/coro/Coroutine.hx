@@ -6,7 +6,7 @@ import sys.thread.Thread;
 import sys.thread.Mutex;
 import haxe.Exception;
 
-@:build(Macro.build())
+@:build(coro.macro.Macro.build())
 class Coroutine {
     @:suspend public static function suspend(func:(IContinuation<Any>)->Void):Any {
         final cont = coro.CoroutineIntrinsics.currentContinuation();

@@ -11,7 +11,7 @@ import utest.Test;
 import utest.Async;
 import utest.Assert;
 
-@:build(Macro.build())
+@:build(coro.macro.Macro.build())
 class Main extends Test {
 	static var nextNumber = 0;
 

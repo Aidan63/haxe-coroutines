@@ -1,3 +1,5 @@
+package coro.macro;
+
 import haxe.macro.Printer;
 import haxe.macro.Expr;
 import haxe.macro.Context;
