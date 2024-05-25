@@ -96,7 +96,7 @@ class Main extends Test {
 #if cpp
 				threads.push(untyped Thread.current().handle);
 #else
-				threads.push(Thread.current());
+				threads.push(Std.string(Thread.current()));
 #end
 
 				cont.resume(null, null);
@@ -108,7 +108,7 @@ class Main extends Test {
 #if cpp
 		threads.push(untyped Thread.current().handle);
 #else
-		threads.push(Thread.current());
+		threads.push(Std.string(Thread.current()));
 #end
 
 		spawnThread();
@@ -116,7 +116,7 @@ class Main extends Test {
 #if cpp
 		threads.push(untyped Thread.current().handle);
 #else
-		threads.push(Thread.current());
+		threads.push(Std.string(Thread.current()));
 #end
 	}
 
