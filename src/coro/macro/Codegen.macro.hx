@@ -14,7 +14,19 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
         throw new Error("Return type hint expected", pos);
     }
 
-    final coroArgs = fun.args.copy();
+    final coroArgs = fun.args.map(arg -> {
+        return switch arg.type {
+            case TPath({ name: 'Coroutine', pack: [ 'coro' ], params: [ TPType(TFunction(fArgs, fRet)) ] }):
+
+                final copy = fArgs.copy();
+                copy.push(fRet);
+
+                arg.type = TPath({ name: 'Coroutine', sub: 'Coroutine${ fArgs.length }', pack: [ 'coro' ], params: copy.map(t -> TPType(t)) });
+                arg;
+            case _:
+                arg;
+        }
+    });
     final cfg      = FlowGraph.build(fun, found);
 
     coroArgs.push({ name: "_hx_completion", type: macro : coro.IContinuation<Any> });
@@ -28,16 +40,11 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
 
 function buildClass(className:String, funcName:String, fun:Function):TypeDefinition {
     final owningClass = Context.getLocalClass().get().module;
-    final args        = fun.args.map(arg -> {
-        if (arg.type == null) {
-            return macro null;
-        }
-        return switch arg.type.toString() {
-            case 'Int', 'Float': macro 0;
-            case 'Bool': macro false;
-            case _: macro null;
-        }
-    });
+    final args        = {
+        var idx = 0;
+
+        fun.args.map(arg -> macro $i{ '_hx_arg${ idx++ }' });
+    }
 
     args.push(macro this);
 
@@ -57,14 +64,6 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
         public var _hx_state:Int;
         public var _hx_result:Any;
         public var _hx_error:haxe.Exception;
-
-        public function new(completion) {
-            _hx_completion = completion;
-            _hx_context    = completion._hx_context;
-            _hx_state      = 0;
-            _hx_result     = null;
-            _hx_error      = null;
-        }
 
         public function resume(result:Any, error:haxe.Exception) {
             _hx_result = result;
@@ -86,14 +85,65 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
         }
     };
 
+    var idx = 0;
+    for (arg in fun.args) {
+        definition.fields.push({
+            name   : '_hx_arg${ idx++ }',
+            pos    : Context.currentPos(),
+            access : [ APublic ],
+            kind   : FVar(arg.type, arg.value)
+        });
+    }
+
+    definition.fields.push({
+        name   : 'new',
+        pos    : Context.currentPos(),
+        access : [ APublic ],
+        kind   : FFun({
+            args: {
+                final args = new Array<FunctionArg>();
+
+                var idx = 0;
+                for (arg in fun.args) {
+                    args.push({
+                        name: 'arg${ idx++ }',
+                        type: arg.type,
+                    });
+                }
+
+                args.push({ name: 'completion' });
+
+                args;
+            },
+            expr: {
+                final args = new Array<Expr>();
+
+                var idx = 0;
+                for (arg in fun.args) {
+                    args.push(macro $i{ '_hx_arg$idx' } = $i{ 'arg$idx' });
+
+                    idx++;
+                }
+
+                macro {
+                    _hx_completion = completion;
+                    _hx_context    = if (completion == null) null else completion._hx_context;
+                    _hx_state      = 0;
+                    _hx_result     = null;
+                    _hx_error      = null;
+
+                    @:mergeBlock $b{ args }
+                }
+            }
+        })
+    });
+
     definition.kind = switch definition.kind {
         case TDClass(superClass, interfaces, isInterface, isFinal, isAbstract):
             TDClass(extended, interfaces, isInterface, isFinal, isAbstract);
         case _:
             definition.kind;
     }
-
-    trace(fun.args.length);
 
     final coroArgs = fun.args.mapi((idx, arg) -> ({
         name : 'arg$idx',
@@ -119,30 +169,24 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
                 args : coroArgs,
                 ret  : macro: coro.IContinuation<Any>,
                 expr : macro {
-                    return new $tp(completion);
+                    return new $tp($a{ coroArgs.map(a -> macro $i{ a.name }) });
                 }
             }),
         });
     }
 
-    {
-        final args = args.copy();
-
-        args[args.length - 1] = macro completion;
-
-        definition.fields.push({
-            name   : 'start',
-            pos    : definition.pos,
-            access : [ APublic ],
-            kind   : FFun({
-                args : coroArgs,
-                ret  : macro: Any,
-                expr : macro {
-                    return @:privateAccess $i{ owningClass }.$funcName($a{ args });
-                }
-            }),
-        });
-    }
+    definition.fields.push({
+        name   : 'start',
+        pos    : definition.pos,
+        access : [ APublic ],
+        kind   : FFun({
+            args : coroArgs,
+            ret  : macro: Any,
+            expr : macro {
+                return @:privateAccess $i{ owningClass }.$funcName($a{ coroArgs.map(a -> macro $i{ a.name }) });
+            }
+        }),
+    });
 
     trace(new Printer().printTypeDefinition(definition));
 
@@ -317,8 +361,11 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun
 
             Context.defineType(clazz);
 
+            final args = fun.args.map(a -> macro $i{ a.name });
+            args.push(macro $i{ '_hx_completion' });
+
             return macro {
-                final _hx_continuation = if (_hx_completion is $complexType) (cast _hx_completion : $complexType) else new $typePath(_hx_completion);
+                final _hx_continuation = if (_hx_completion is $complexType) (cast _hx_completion : $complexType) else new $typePath($a{ args });
 
                 ${ { expr: EVars(varDecls), pos: pos} };
 

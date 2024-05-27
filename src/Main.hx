@@ -1,6 +1,7 @@
 import sys.thread.Thread;
 import sys.thread.EventLoop;
 import coro.Coroutine;
+import coro.Coroutine.Coroutine0;
 import coro.IContinuation;
 import coro.CoroutineContext;
 import coro.CoroutineIntrinsics;
@@ -88,6 +89,12 @@ class Main extends Test {
 		}
 
 		return accumulated;
+	}
+
+	@:suspend static function coroParameter(c:coro.Coroutine<()->Int>):Int {
+		trace('before');
+
+		return c.start();
 	}
 
 	@:suspend static function spawnThread():Void {
@@ -200,6 +207,17 @@ class Main extends Test {
 		});
 
 		CoroutineIntrinsics.create(schedulerTesting, cont).resume(null, null);
+	}
+
+	function test_coro_param(async:Async) {
+		final cont = new CallbackContinuation(new EventLoopScheduler(Thread.current().events), (result, error) -> {
+			Assert.isNull(error);
+			Assert.equals(result, 1);
+
+			async.done();
+		});
+
+		CoroutineIntrinsics.create(coroParameter, new HxCoro_getNumber(null), cont).resume(null, null);
 	}
 
 	static function main() {

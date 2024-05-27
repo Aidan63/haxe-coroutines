@@ -78,7 +78,7 @@ class FlowGraph {
 
 	static function isSuspendingFunction(name:String):Bool {
 		return switch name {
-			case "suspend":
+			case "suspend", 'start':
 				true;
 			case _:
 				found.exists(n -> n == name);
