@@ -7,6 +7,7 @@ import haxe.macro.Expr;
 
 using haxe.macro.ExprTools;
 using haxe.macro.ComplexTypeTools;
+using Lambda;
 
 function doTransform(funcName:String, fun:Function, pos:Position, found:Array<String>):Function {
     if (fun.ret == null) {
@@ -38,11 +39,18 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
         }
     });
 
-    trace(owningClass);
-
     args.push(macro this);
 
-    return macro class $className implements coro.IContinuation<Any> {
+    final extended:TypePath = {
+        pack   : [ 'coro' ],
+        name   : 'Coroutine',
+        sub    : 'Coroutine${ fun.args.length }',
+        params : fun.args.map(arg -> TPType(arg.type))
+    };
+
+    extended.params.push(TPType(fun.ret));
+
+    final definition = macro class $className implements coro.IContinuation<Any> {
         public final _hx_completion:coro.IContinuation<Any>;
         public final _hx_context:coro.CoroutineContext;
 
@@ -77,6 +85,68 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
             });
         }
     };
+
+    definition.kind = switch definition.kind {
+        case TDClass(superClass, interfaces, isInterface, isFinal, isAbstract):
+            TDClass(extended, interfaces, isInterface, isFinal, isAbstract);
+        case _:
+            definition.kind;
+    }
+
+    trace(fun.args.length);
+
+    final coroArgs = fun.args.mapi((idx, arg) -> ({
+        name : 'arg$idx',
+        type : arg.type
+    } : FunctionArg));
+
+    coroArgs.push({
+        name : 'completion',
+        type : macro : coro.IContinuation<Any>
+    });
+
+    {
+        final tp = {
+            pack: [],
+            name: className
+        };
+        
+        definition.fields.push({
+            name   : 'create',
+            pos    : definition.pos,
+            access : [ APublic ],
+            kind   : FFun({
+                args : coroArgs,
+                ret  : macro: coro.IContinuation<Any>,
+                expr : macro {
+                    return new $tp(completion);
+                }
+            }),
+        });
+    }
+
+    {
+        final args = args.copy();
+
+        args[args.length - 1] = macro completion;
+
+        definition.fields.push({
+            name   : 'start',
+            pos    : definition.pos,
+            access : [ APublic ],
+            kind   : FFun({
+                args : coroArgs,
+                ret  : macro: Any,
+                expr : macro {
+                    return @:privateAccess $i{ owningClass }.$funcName($a{ args });
+                }
+            }),
+        });
+    }
+
+    trace(new Printer().printTypeDefinition(definition));
+
+    return definition;
 }
 
 function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun:Function) {
