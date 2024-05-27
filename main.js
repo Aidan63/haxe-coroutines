@@ -12,7 +12,8 @@ var EReg = function(r,opt) {
 };
 EReg.__name__ = "EReg";
 EReg.prototype = {
-	match: function(s) {
+	r: null
+	,match: function(s) {
 		if(this.r.global) {
 			this.r.lastIndex = 0;
 		}
@@ -22,30 +23,53 @@ EReg.prototype = {
 	}
 	,__class__: EReg
 };
+var coro_Coroutine = function() { };
+coro_Coroutine.__name__ = "coro.Coroutine";
+coro_Coroutine.suspend = function(func,_hx_completion) {
+	var safe = new coro__$Coroutine_SafeContinuation(_hx_completion);
+	func(safe);
+	return safe.getOrThrow();
+};
+var coro_Coroutine0 = function() { };
+coro_Coroutine0.__name__ = "coro.Coroutine0";
+coro_Coroutine0.__super__ = coro_Coroutine;
+coro_Coroutine0.prototype = $extend(coro_Coroutine.prototype,{
+	create: null
+	,start: null
+	,__class__: coro_Coroutine0
+});
 var coro_IContinuation = function() { };
 coro_IContinuation.__name__ = "coro.IContinuation";
 coro_IContinuation.__isInterface__ = true;
 coro_IContinuation.prototype = {
-	__class__: coro_IContinuation
+	_hx_context: null
+	,resume: null
+	,__class__: coro_IContinuation
 };
 var HxCoro_$cancellationTesting = function(completion) {
 	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
+	this._hx_context = completion == null ? null : completion._hx_context;
 	this._hx_state = 0;
 	this._hx_result = null;
 	this._hx_error = null;
 };
 HxCoro_$cancellationTesting.__name__ = "HxCoro_cancellationTesting";
 HxCoro_$cancellationTesting.__interfaces__ = [coro_IContinuation];
-HxCoro_$cancellationTesting.prototype = {
-	resume: function(result,error) {
+HxCoro_$cancellationTesting.__super__ = coro_Coroutine0;
+HxCoro_$cancellationTesting.prototype = $extend(coro_Coroutine0.prototype,{
+	_hx_completion: null
+	,_hx_context: null
+	,_hx_state: null
+	,_hx_result: null
+	,_hx_error: null
+	,resume: function(result,error) {
 		var _gthis = this;
 		this._hx_result = result;
 		this._hx_error = error;
 		this._hx_context.scheduler.schedule(function() {
 			try {
 				var result = Main.cancellationTesting(_gthis);
-				if(result == coro_Primitive.suspended) {
+				if(((result) instanceof coro_Primitive)) {
 					return;
 				}
 				_gthis._hx_completion.resume(result,null);
@@ -55,26 +79,38 @@ HxCoro_$cancellationTesting.prototype = {
 			}
 		});
 	}
+	,create: function(completion) {
+		return new HxCoro_$cancellationTesting(completion);
+	}
+	,start: function(completion) {
+		return Main.cancellationTesting(completion);
+	}
 	,__class__: HxCoro_$cancellationTesting
-};
+});
 var HxCoro_$cooperativeCancellation = function(completion) {
 	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
+	this._hx_context = completion == null ? null : completion._hx_context;
 	this._hx_state = 0;
 	this._hx_result = null;
 	this._hx_error = null;
 };
 HxCoro_$cooperativeCancellation.__name__ = "HxCoro_cooperativeCancellation";
 HxCoro_$cooperativeCancellation.__interfaces__ = [coro_IContinuation];
-HxCoro_$cooperativeCancellation.prototype = {
-	resume: function(result,error) {
+HxCoro_$cooperativeCancellation.__super__ = coro_Coroutine0;
+HxCoro_$cooperativeCancellation.prototype = $extend(coro_Coroutine0.prototype,{
+	_hx_completion: null
+	,_hx_context: null
+	,_hx_state: null
+	,_hx_result: null
+	,_hx_error: null
+	,resume: function(result,error) {
 		var _gthis = this;
 		this._hx_result = result;
 		this._hx_error = error;
 		this._hx_context.scheduler.schedule(function() {
 			try {
 				var result = Main.cooperativeCancellation(_gthis);
-				if(result == coro_Primitive.suspended) {
+				if(((result) instanceof coro_Primitive)) {
 					return;
 				}
 				_gthis._hx_completion.resume(result,null);
@@ -84,26 +120,47 @@ HxCoro_$cooperativeCancellation.prototype = {
 			}
 		});
 	}
+	,create: function(completion) {
+		return new HxCoro_$cooperativeCancellation(completion);
+	}
+	,start: function(completion) {
+		return Main.cooperativeCancellation(completion);
+	}
 	,__class__: HxCoro_$cooperativeCancellation
-};
-var HxCoro_$delay = function(completion) {
+});
+var coro_Coroutine1 = function() { };
+coro_Coroutine1.__name__ = "coro.Coroutine1";
+coro_Coroutine1.__super__ = coro_Coroutine;
+coro_Coroutine1.prototype = $extend(coro_Coroutine.prototype,{
+	create: null
+	,start: null
+	,__class__: coro_Coroutine1
+});
+var HxCoro_$coroParameter = function(arg0,completion) {
 	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
+	this._hx_context = completion == null ? null : completion._hx_context;
 	this._hx_state = 0;
 	this._hx_result = null;
 	this._hx_error = null;
+	this._hx_arg0 = arg0;
 };
-HxCoro_$delay.__name__ = "HxCoro_delay";
-HxCoro_$delay.__interfaces__ = [coro_IContinuation];
-HxCoro_$delay.prototype = {
-	resume: function(result,error) {
+HxCoro_$coroParameter.__name__ = "HxCoro_coroParameter";
+HxCoro_$coroParameter.__interfaces__ = [coro_IContinuation];
+HxCoro_$coroParameter.__super__ = coro_Coroutine1;
+HxCoro_$coroParameter.prototype = $extend(coro_Coroutine1.prototype,{
+	_hx_completion: null
+	,_hx_context: null
+	,_hx_state: null
+	,_hx_result: null
+	,_hx_error: null
+	,resume: function(result,error) {
 		var _gthis = this;
 		this._hx_result = result;
 		this._hx_error = error;
 		this._hx_context.scheduler.schedule(function() {
 			try {
-				var result = Main.delay(0,_gthis);
-				if(result == coro_Primitive.suspended) {
+				var result = Main.coroParameter(_gthis._hx_arg0,_gthis);
+				if(((result) instanceof coro_Primitive)) {
 					return;
 				}
 				_gthis._hx_completion.resume(result,null);
@@ -113,26 +170,82 @@ HxCoro_$delay.prototype = {
 			}
 		});
 	}
-	,__class__: HxCoro_$delay
+	,_hx_arg0: null
+	,create: function(arg0,completion) {
+		return new HxCoro_$coroParameter(arg0,completion);
+	}
+	,start: function(arg0,completion) {
+		return Main.coroParameter(arg0,completion);
+	}
+	,__class__: HxCoro_$coroParameter
+});
+var HxCoro_$delay = function(arg0,completion) {
+	this._hx_completion = completion;
+	this._hx_context = completion == null ? null : completion._hx_context;
+	this._hx_state = 0;
+	this._hx_result = null;
+	this._hx_error = null;
+	this._hx_arg0 = arg0;
 };
+HxCoro_$delay.__name__ = "HxCoro_delay";
+HxCoro_$delay.__interfaces__ = [coro_IContinuation];
+HxCoro_$delay.__super__ = coro_Coroutine1;
+HxCoro_$delay.prototype = $extend(coro_Coroutine1.prototype,{
+	_hx_completion: null
+	,_hx_context: null
+	,_hx_state: null
+	,_hx_result: null
+	,_hx_error: null
+	,resume: function(result,error) {
+		var _gthis = this;
+		this._hx_result = result;
+		this._hx_error = error;
+		this._hx_context.scheduler.schedule(function() {
+			try {
+				var result = Main.delay(_gthis._hx_arg0,_gthis);
+				if(((result) instanceof coro_Primitive)) {
+					return;
+				}
+				_gthis._hx_completion.resume(result,null);
+			} catch( _g ) {
+				var _g1 = haxe_Exception.caught(_g);
+				_gthis._hx_completion.resume(null,_g1);
+			}
+		});
+	}
+	,_hx_arg0: null
+	,create: function(arg0,completion) {
+		return new HxCoro_$delay(arg0,completion);
+	}
+	,start: function(arg0,completion) {
+		return Main.delay(arg0,completion);
+	}
+	,__class__: HxCoro_$delay
+});
 var HxCoro_$getNumber = function(completion) {
 	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
+	this._hx_context = completion == null ? null : completion._hx_context;
 	this._hx_state = 0;
 	this._hx_result = null;
 	this._hx_error = null;
 };
 HxCoro_$getNumber.__name__ = "HxCoro_getNumber";
 HxCoro_$getNumber.__interfaces__ = [coro_IContinuation];
-HxCoro_$getNumber.prototype = {
-	resume: function(result,error) {
+HxCoro_$getNumber.__super__ = coro_Coroutine0;
+HxCoro_$getNumber.prototype = $extend(coro_Coroutine0.prototype,{
+	_hx_completion: null
+	,_hx_context: null
+	,_hx_state: null
+	,_hx_result: null
+	,_hx_error: null
+	,resume: function(result,error) {
 		var _gthis = this;
 		this._hx_result = result;
 		this._hx_error = error;
 		this._hx_context.scheduler.schedule(function() {
 			try {
 				var result = Main.getNumber(_gthis);
-				if(result == coro_Primitive.suspended) {
+				if(((result) instanceof coro_Primitive)) {
 					return;
 				}
 				_gthis._hx_completion.resume(result,null);
@@ -142,26 +255,38 @@ HxCoro_$getNumber.prototype = {
 			}
 		});
 	}
+	,create: function(completion) {
+		return new HxCoro_$getNumber(completion);
+	}
+	,start: function(completion) {
+		return Main.getNumber(completion);
+	}
 	,__class__: HxCoro_$getNumber
-};
+});
 var HxCoro_$someAsync = function(completion) {
 	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
+	this._hx_context = completion == null ? null : completion._hx_context;
 	this._hx_state = 0;
 	this._hx_result = null;
 	this._hx_error = null;
 };
 HxCoro_$someAsync.__name__ = "HxCoro_someAsync";
 HxCoro_$someAsync.__interfaces__ = [coro_IContinuation];
-HxCoro_$someAsync.prototype = {
-	resume: function(result,error) {
+HxCoro_$someAsync.__super__ = coro_Coroutine0;
+HxCoro_$someAsync.prototype = $extend(coro_Coroutine0.prototype,{
+	_hx_completion: null
+	,_hx_context: null
+	,_hx_state: null
+	,_hx_result: null
+	,_hx_error: null
+	,resume: function(result,error) {
 		var _gthis = this;
 		this._hx_result = result;
 		this._hx_error = error;
 		this._hx_context.scheduler.schedule(function() {
 			try {
 				var result = Main.someAsync(_gthis);
-				if(result == coro_Primitive.suspended) {
+				if(((result) instanceof coro_Primitive)) {
 					return;
 				}
 				_gthis._hx_completion.resume(result,null);
@@ -171,26 +296,39 @@ HxCoro_$someAsync.prototype = {
 			}
 		});
 	}
+	,create: function(completion) {
+		return new HxCoro_$someAsync(completion);
+	}
+	,start: function(completion) {
+		return Main.someAsync(completion);
+	}
 	,__class__: HxCoro_$someAsync
-};
-var HxCoro_$write = function(completion) {
+});
+var HxCoro_$write = function(arg0,completion) {
 	this._hx_completion = completion;
-	this._hx_context = completion._hx_context;
+	this._hx_context = completion == null ? null : completion._hx_context;
 	this._hx_state = 0;
 	this._hx_result = null;
 	this._hx_error = null;
+	this._hx_arg0 = arg0;
 };
 HxCoro_$write.__name__ = "HxCoro_write";
 HxCoro_$write.__interfaces__ = [coro_IContinuation];
-HxCoro_$write.prototype = {
-	resume: function(result,error) {
+HxCoro_$write.__super__ = coro_Coroutine1;
+HxCoro_$write.prototype = $extend(coro_Coroutine1.prototype,{
+	_hx_completion: null
+	,_hx_context: null
+	,_hx_state: null
+	,_hx_result: null
+	,_hx_error: null
+	,resume: function(result,error) {
 		var _gthis = this;
 		this._hx_result = result;
 		this._hx_error = error;
 		this._hx_context.scheduler.schedule(function() {
 			try {
-				var result = Main.write(null,_gthis);
-				if(result == coro_Primitive.suspended) {
+				var result = Main.write(_gthis._hx_arg0,_gthis);
+				if(((result) instanceof coro_Primitive)) {
 					return;
 				}
 				_gthis._hx_completion.resume(result,null);
@@ -200,8 +338,15 @@ HxCoro_$write.prototype = {
 			}
 		});
 	}
+	,_hx_arg0: null
+	,create: function(arg0,completion) {
+		return new HxCoro_$write(arg0,completion);
+	}
+	,start: function(arg0,completion) {
+		return Main.write(arg0,completion);
+	}
 	,__class__: HxCoro_$write
-};
+});
 var HxOverrides = function() { };
 HxOverrides.__name__ = "HxOverrides";
 HxOverrides.cca = function(s,index) {
@@ -234,6 +379,27 @@ HxOverrides.remove = function(a,obj) {
 HxOverrides.now = function() {
 	return Date.now();
 };
+var Lambda = function() { };
+Lambda.__name__ = "Lambda";
+Lambda.array = function(it) {
+	var a = [];
+	var i = $getIterator(it);
+	while(i.hasNext()) {
+		var i1 = i.next();
+		a.push(i1);
+	}
+	return a;
+};
+Lambda.has = function(it,elt) {
+	var x = $getIterator(it);
+	while(x.hasNext()) {
+		var x1 = x.next();
+		if(x1 == elt) {
+			return true;
+		}
+	}
+	return false;
+};
 var utest_ITest = function() { };
 utest_ITest.__name__ = "utest.ITest";
 utest_ITest.__isInterface__ = true;
@@ -253,7 +419,7 @@ var Main = function() {
 };
 Main.__name__ = "Main";
 Main.write = function(string,_hx_completion) {
-	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$write) ? _hx_completion : new HxCoro_$write(_hx_completion);
+	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$write) ? _hx_completion : new HxCoro_$write(string,_hx_completion);
 	var tmp0;
 	if(_hx_continuation._hx_error != null) {
 		throw haxe_Exception.thrown(_hx_continuation._hx_error);
@@ -266,7 +432,7 @@ Main.write = function(string,_hx_completion) {
 				cont.resume(0,null);
 			});
 		},_hx_continuation);
-		if(_hx_tmp == coro_Primitive.suspended) {
+		if(((_hx_tmp) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp;
@@ -280,7 +446,7 @@ Main.write = function(string,_hx_completion) {
 	}
 };
 Main.delay = function(ms,_hx_completion) {
-	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$delay) ? _hx_completion : new HxCoro_$delay(_hx_completion);
+	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$delay) ? _hx_completion : new HxCoro_$delay(ms,_hx_completion);
 	var tmp0;
 	if(_hx_continuation._hx_error != null) {
 		throw haxe_Exception.thrown(_hx_continuation._hx_error);
@@ -300,7 +466,7 @@ Main.delay = function(ms,_hx_completion) {
 				cont.resume(null,new haxe_exceptions_CancellationException("delay has been cancelled"));
 			});
 		},_hx_continuation);
-		if(_hx_tmp == coro_Primitive.suspended) {
+		if(((_hx_tmp) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp;
@@ -325,7 +491,7 @@ Main.getNumber = function(_hx_completion) {
 		var _hx_tmp = coro_Coroutine.suspend(function(cont) {
 			cont.resume(++Main.nextNumber,null);
 		},_hx_continuation);
-		if(_hx_tmp == coro_Primitive.suspended) {
+		if(((_hx_tmp) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp;
@@ -349,7 +515,7 @@ Main.someAsync = function(_hx_completion) {
 	case 0:
 		_hx_continuation._hx_state = 1;
 		var _hx_tmp = Main.write("hi",_hx_continuation);
-		if(_hx_tmp == coro_Primitive.suspended) {
+		if(((_hx_tmp) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp;
@@ -360,7 +526,7 @@ Main.someAsync = function(_hx_completion) {
 	case 2:
 		_hx_continuation._hx_state = 3;
 		var _hx_tmp1 = Main.getNumber(_hx_continuation);
-		if(_hx_tmp1 == coro_Primitive.suspended) {
+		if(((_hx_tmp1) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp1;
@@ -376,7 +542,7 @@ Main.someAsync = function(_hx_completion) {
 	case 4:
 		_hx_continuation._hx_state = 5;
 		var _hx_tmp2 = Main.write("wait for it...",_hx_continuation);
-		if(_hx_tmp2 == coro_Primitive.suspended) {
+		if(((_hx_tmp2) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp2;
@@ -384,7 +550,7 @@ Main.someAsync = function(_hx_completion) {
 	case 5:
 		_hx_continuation._hx_state = 6;
 		var _hx_tmp3 = Main.delay(100,_hx_continuation);
-		if(_hx_tmp3 == coro_Primitive.suspended) {
+		if(((_hx_tmp3) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp3;
@@ -392,7 +558,7 @@ Main.someAsync = function(_hx_completion) {
 	case 6:
 		_hx_continuation._hx_state = 7;
 		var _hx_tmp4 = Main.getNumber(_hx_continuation);
-		if(_hx_tmp4 == coro_Primitive.suspended) {
+		if(((_hx_tmp4) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp4;
@@ -401,7 +567,7 @@ Main.someAsync = function(_hx_completion) {
 		tmp4 = _hx_continuation._hx_result;
 		_hx_continuation._hx_state = 8;
 		var _hx_tmp5 = Main.write(Std.string(tmp4),_hx_continuation);
-		if(_hx_tmp5 == coro_Primitive.suspended) {
+		if(((_hx_tmp5) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp5;
@@ -425,7 +591,7 @@ Main.cancellationTesting = function(_hx_completion) {
 	case 0:
 		_hx_continuation._hx_state = 1;
 		var _hx_tmp = Main.write("starting long delay...",_hx_continuation);
-		if(_hx_tmp == coro_Primitive.suspended) {
+		if(((_hx_tmp) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp;
@@ -433,7 +599,7 @@ Main.cancellationTesting = function(_hx_completion) {
 	case 1:
 		_hx_continuation._hx_state = 2;
 		var _hx_tmp1 = Main.delay(10000,_hx_continuation);
-		if(_hx_tmp1 == coro_Primitive.suspended) {
+		if(((_hx_tmp1) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp1;
@@ -441,7 +607,7 @@ Main.cancellationTesting = function(_hx_completion) {
 	case 2:
 		_hx_continuation._hx_state = 3;
 		var _hx_tmp2 = Main.write("delay over!",_hx_continuation);
-		if(_hx_tmp2 == coro_Primitive.suspended) {
+		if(((_hx_tmp2) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp2;
@@ -474,7 +640,7 @@ Main.cooperativeCancellation = function(_hx_completion) {
 	case 2:
 		_hx_continuation._hx_state = 3;
 		var _hx_tmp = Main.getNumber(_hx_continuation);
-		if(_hx_tmp == coro_Primitive.suspended) {
+		if(((_hx_tmp) instanceof coro_Primitive)) {
 			return coro_Primitive.suspended;
 		}
 		_hx_continuation._hx_result = _hx_tmp;
@@ -491,6 +657,30 @@ Main.cooperativeCancellation = function(_hx_completion) {
 		throw new haxe_Exception("Invalid state");
 	}
 };
+Main.coroParameter = function(c,_hx_completion) {
+	var _hx_continuation = ((_hx_completion) instanceof HxCoro_$coroParameter) ? _hx_completion : new HxCoro_$coroParameter(c,_hx_completion);
+	var tmp0;
+	if(_hx_continuation._hx_error != null) {
+		throw haxe_Exception.thrown(_hx_continuation._hx_error);
+	}
+	while(true) switch(_hx_continuation._hx_state) {
+	case 0:
+		haxe_Log.trace("before",{ fileName : "src/Main.js.hx", lineNumber : 86, className : "Main", methodName : "coroParameter"});
+		_hx_continuation._hx_state = 1;
+		var _hx_tmp = c.start(_hx_continuation);
+		if(((_hx_tmp) instanceof coro_Primitive)) {
+			return coro_Primitive.suspended;
+		}
+		_hx_continuation._hx_result = _hx_tmp;
+		break;
+	case 1:
+		tmp0 = _hx_continuation._hx_result;
+		_hx_continuation._hx_state = -1;
+		return tmp0;
+	default:
+		throw new haxe_Exception("Invalid state");
+	}
+};
 Main.main = function() {
 	utest_UTest.run([new Main()]);
 };
@@ -502,29 +692,37 @@ Main.prototype = $extend(utest_Test.prototype,{
 	}
 	,test_complex_continuation: function(async) {
 		var cont = new _$Main_CallbackContinuation(new coro_schedulers_NodeScheduler(),function(result,error) {
-			utest_Assert.isNull(error,null,{ fileName : "src/Main.js.hx", lineNumber : 97, className : "Main", methodName : "test_complex_continuation"});
-			utest_Assert.equals(result,15,null,{ fileName : "src/Main.js.hx", lineNumber : 98, className : "Main", methodName : "test_complex_continuation"});
-			async.done({ fileName : "src/Main.js.hx", lineNumber : 100, className : "Main", methodName : "test_complex_continuation"});
+			utest_Assert.isNull(error,null,{ fileName : "src/Main.js.hx", lineNumber : 103, className : "Main", methodName : "test_complex_continuation"});
+			utest_Assert.equals(result,15,null,{ fileName : "src/Main.js.hx", lineNumber : 104, className : "Main", methodName : "test_complex_continuation"});
+			async.done({ fileName : "src/Main.js.hx", lineNumber : 106, className : "Main", methodName : "test_complex_continuation"});
 		});
 		new HxCoro_$someAsync(cont).resume(null,null);
 	}
 	,test_cancellation: function(async) {
 		var cont = new _$Main_CallbackContinuation(new coro_schedulers_NodeScheduler(),function(result,error) {
-			utest_Assert.isNull(result,null,{ fileName : "src/Main.js.hx", lineNumber : 108, className : "Main", methodName : "test_cancellation"});
-			utest_Assert.isOfType(error,haxe_exceptions_CancellationException,null,{ fileName : "src/Main.js.hx", lineNumber : 109, className : "Main", methodName : "test_cancellation"});
-			async.done({ fileName : "src/Main.js.hx", lineNumber : 111, className : "Main", methodName : "test_cancellation"});
+			utest_Assert.isNull(result,null,{ fileName : "src/Main.js.hx", lineNumber : 114, className : "Main", methodName : "test_cancellation"});
+			utest_Assert.isOfType(error,haxe_exceptions_CancellationException,null,{ fileName : "src/Main.js.hx", lineNumber : 115, className : "Main", methodName : "test_cancellation"});
+			async.done({ fileName : "src/Main.js.hx", lineNumber : 117, className : "Main", methodName : "test_cancellation"});
 		});
 		new HxCoro_$cancellationTesting(cont).resume(null,null);
 		global.setTimeout($bind(cont,cont.cancel),100);
 	}
 	,test_cooperative_cancellation: function(async) {
 		var cont = new _$Main_CallbackContinuation(new coro_schedulers_NodeScheduler(),function(result,error) {
-			utest_Assert.isNull(error,null,{ fileName : "src/Main.js.hx", lineNumber : 121, className : "Main", methodName : "test_cooperative_cancellation"});
-			utest_Assert.isTrue(result > 0,null,{ fileName : "src/Main.js.hx", lineNumber : 122, className : "Main", methodName : "test_cooperative_cancellation"});
-			async.done({ fileName : "src/Main.js.hx", lineNumber : 124, className : "Main", methodName : "test_cooperative_cancellation"});
+			utest_Assert.isNull(error,null,{ fileName : "src/Main.js.hx", lineNumber : 127, className : "Main", methodName : "test_cooperative_cancellation"});
+			utest_Assert.isTrue(result > 0,null,{ fileName : "src/Main.js.hx", lineNumber : 128, className : "Main", methodName : "test_cooperative_cancellation"});
+			async.done({ fileName : "src/Main.js.hx", lineNumber : 130, className : "Main", methodName : "test_cooperative_cancellation"});
 		});
 		new HxCoro_$cooperativeCancellation(cont).resume(null,null);
 		global.setTimeout($bind(cont,cont.cancel),100);
+	}
+	,test_coro_param: function(async) {
+		var cont = new _$Main_CallbackContinuation(new coro_schedulers_NodeScheduler(),function(result,error) {
+			utest_Assert.isNull(error,null,{ fileName : "src/Main.js.hx", lineNumber : 140, className : "Main", methodName : "test_coro_param"});
+			utest_Assert.equals(result,1,null,{ fileName : "src/Main.js.hx", lineNumber : 141, className : "Main", methodName : "test_coro_param"});
+			async.done({ fileName : "src/Main.js.hx", lineNumber : 143, className : "Main", methodName : "test_coro_param"});
+		});
+		new HxCoro_$coroParameter(new HxCoro_$getNumber(null),cont).resume(null,null);
 	}
 	,__initializeUtest__: function() {
 		var _gthis = this;
@@ -533,6 +731,11 @@ Main.prototype = $extend(utest_Test.prototype,{
 			_gthis.setup();
 			return utest_Async.getResolved();
 		};
+		init.tests.push({ name : "test_coro_param", dependencies : [], execute : function() {
+			var async = new utest_Async(250);
+			_gthis.test_coro_param(async);
+			return async;
+		}, ignore : haxe_ds_Option.None});
 		init.tests.push({ name : "test_cooperative_cancellation", dependencies : [], execute : function() {
 			var async = new utest_Async(250);
 			_gthis.test_cooperative_cancellation(async);
@@ -552,6 +755,26 @@ Main.prototype = $extend(utest_Test.prototype,{
 	}
 	,__class__: Main
 });
+var _$Main_NodeContinuation = function(scheduler) {
+	this.source = new coro_CancellationTokenSource();
+	this._hx_context = new coro_CoroutineContext(scheduler,this.source.token);
+};
+_$Main_NodeContinuation.__name__ = "_Main.NodeContinuation";
+_$Main_NodeContinuation.__interfaces__ = [coro_IContinuation];
+_$Main_NodeContinuation.prototype = {
+	source: null
+	,_hx_context: null
+	,resume: function(result,error) {
+		if(error != null) {
+			throw haxe_Exception.thrown(error);
+		}
+		haxe_Log.trace(result == null ? "null" : Std.string(result),{ fileName : "src/Main.js.hx", lineNumber : 169, className : "_Main.NodeContinuation", methodName : "resume"});
+	}
+	,cancel: function() {
+		this.source.cancel();
+	}
+	,__class__: _$Main_NodeContinuation
+};
 var _$Main_CallbackContinuation = function(scheduler,callback) {
 	this.callback = callback;
 	this.source = new coro_CancellationTokenSource();
@@ -560,7 +783,10 @@ var _$Main_CallbackContinuation = function(scheduler,callback) {
 _$Main_CallbackContinuation.__name__ = "_Main.CallbackContinuation";
 _$Main_CallbackContinuation.__interfaces__ = [coro_IContinuation];
 _$Main_CallbackContinuation.prototype = {
-	resume: function(result,error) {
+	source: null
+	,callback: null
+	,_hx_context: null
+	,resume: function(result,error) {
 		this.callback(result,error);
 	}
 	,cancel: function() {
@@ -571,6 +797,52 @@ _$Main_CallbackContinuation.prototype = {
 Math.__name__ = "Math";
 var Reflect = function() { };
 Reflect.__name__ = "Reflect";
+Reflect.field = function(o,field) {
+	try {
+		return o[field];
+	} catch( _g ) {
+		haxe_NativeStackTrace.lastError = _g;
+		return null;
+	}
+};
+Reflect.getProperty = function(o,field) {
+	var tmp;
+	if(o == null) {
+		return null;
+	} else {
+		var tmp1;
+		if(o.__properties__) {
+			tmp = o.__properties__["get_" + field];
+			tmp1 = tmp;
+		} else {
+			tmp1 = false;
+		}
+		if(tmp1) {
+			return o[tmp]();
+		} else {
+			return o[field];
+		}
+	}
+};
+Reflect.fields = function(o) {
+	var a = [];
+	if(o != null) {
+		var hasOwnProperty = Object.prototype.hasOwnProperty;
+		for( var f in o ) {
+		if(f != "__id__" && f != "hx__closures__" && hasOwnProperty.call(o,f)) {
+			a.push(f);
+		}
+		}
+	}
+	return a;
+};
+Reflect.isFunction = function(f) {
+	if(typeof(f) == "function") {
+		return !(f.__name__ || f.__ename__);
+	} else {
+		return false;
+	}
+};
 Reflect.compare = function(a,b) {
 	if(a == b) {
 		return 0;
@@ -597,7 +869,8 @@ var StringBuf = function() {
 };
 StringBuf.__name__ = "StringBuf";
 StringBuf.prototype = {
-	__class__: StringBuf
+	b: null
+	,__class__: StringBuf
 };
 var StringTools = function() { };
 StringTools.__name__ = "StringTools";
@@ -653,6 +926,13 @@ Type.getEnum = function(o) {
 	}
 	return $hxEnums[o.__enum__];
 };
+Type.getInstanceFields = function(c) {
+	var a = [];
+	for(var i in c.prototype) a.push(i);
+	HxOverrides.remove(a,"__class__");
+	HxOverrides.remove(a,"__properties__");
+	return a;
+};
 Type.typeof = function(v) {
 	switch(typeof(v)) {
 	case "boolean":
@@ -688,18 +968,27 @@ Type.typeof = function(v) {
 		return ValueType.TUnknown;
 	}
 };
+Type.enumParameters = function(e) {
+	if(e.__params__ != null) {
+		return e.__params__();
+	} else {
+		return [];
+	}
+};
 var coro_CancellationToken = function(source) {
 	this.source = source;
 };
 coro_CancellationToken.__name__ = "coro.CancellationToken";
 coro_CancellationToken.prototype = {
-	get_isCancellationRequested: function() {
+	source: null
+	,get_isCancellationRequested: function() {
 		return this.source.get_isCancellationRequested();
 	}
 	,register: function(func) {
 		return this.source.register(func);
 	}
 	,__class__: coro_CancellationToken
+	,__properties__: {get_isCancellationRequested:"get_isCancellationRequested"}
 };
 var coro_Registration = {};
 coro_Registration._new = function(func) {
@@ -715,7 +1004,10 @@ var coro_CancellationTokenSource = function() {
 };
 coro_CancellationTokenSource.__name__ = "coro.CancellationTokenSource";
 coro_CancellationTokenSource.prototype = {
-	get_isCancellationRequested: function() {
+	cancelled: null
+	,registrations: null
+	,token: null
+	,get_isCancellationRequested: function() {
 		return this.cancelled;
 	}
 	,register: function(func) {
@@ -742,14 +1034,16 @@ coro_CancellationTokenSource.prototype = {
 		}
 	}
 	,__class__: coro_CancellationTokenSource
+	,__properties__: {get_isCancellationRequested:"get_isCancellationRequested"}
 };
-var coro_Coroutine = function() { };
-coro_Coroutine.__name__ = "coro.Coroutine";
-coro_Coroutine.suspend = function(func,_hx_completion) {
-	var safe = new coro__$Coroutine_SafeContinuation(_hx_completion);
-	func(safe);
-	return safe.getOrThrow();
-};
+var coro_Coroutine2 = function() { };
+coro_Coroutine2.__name__ = "coro.Coroutine2";
+coro_Coroutine2.__super__ = coro_Coroutine;
+coro_Coroutine2.prototype = $extend(coro_Coroutine.prototype,{
+	create: null
+	,start: null
+	,__class__: coro_Coroutine2
+});
 var coro__$Coroutine_SafeContinuation = function(completion) {
 	this._hx_completion = completion;
 	this._hx_context = this._hx_completion._hx_context;
@@ -760,7 +1054,12 @@ var coro__$Coroutine_SafeContinuation = function(completion) {
 coro__$Coroutine_SafeContinuation.__name__ = "coro._Coroutine.SafeContinuation";
 coro__$Coroutine_SafeContinuation.__interfaces__ = [coro_IContinuation];
 coro__$Coroutine_SafeContinuation.prototype = {
-	resume: function(result,error) {
+	_hx_completion: null
+	,assigned: null
+	,_hx_result: null
+	,_hx_error: null
+	,_hx_context: null
+	,resume: function(result,error) {
 		var _gthis = this;
 		this._hx_context.scheduler.schedule(function() {
 			if(_gthis.assigned) {
@@ -792,8 +1091,12 @@ var coro_CoroutineContext = function(scheduler,token) {
 };
 coro_CoroutineContext.__name__ = "coro.CoroutineContext";
 coro_CoroutineContext.prototype = {
-	__class__: coro_CoroutineContext
+	scheduler: null
+	,token: null
+	,__class__: coro_CoroutineContext
 };
+var coro_CoroutineIntrinsics = function() { };
+coro_CoroutineIntrinsics.__name__ = "coro.CoroutineIntrinsics";
 var coro_Primitive = function() {
 };
 coro_Primitive.__name__ = "coro.Primitive";
@@ -804,7 +1107,8 @@ var coro_schedulers_IScheduler = function() { };
 coro_schedulers_IScheduler.__name__ = "coro.schedulers.IScheduler";
 coro_schedulers_IScheduler.__isInterface__ = true;
 coro_schedulers_IScheduler.prototype = {
-	__class__: coro_schedulers_IScheduler
+	schedule: null
+	,__class__: coro_schedulers_IScheduler
 };
 var coro_schedulers_NodeScheduler = function() {
 };
@@ -984,6 +1288,11 @@ haxe_CallStack.itemToString = function(b,s) {
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = "haxe.IMap";
 haxe_IMap.__isInterface__ = true;
+haxe_IMap.prototype = {
+	get: null
+	,keys: null
+	,__class__: haxe_IMap
+};
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
 	this.message = message;
@@ -1033,7 +1342,10 @@ haxe_Exception.thrown = function(value) {
 };
 haxe_Exception.__super__ = Error;
 haxe_Exception.prototype = $extend(Error.prototype,{
-	toString: function() {
+	__skipStack: null
+	,__nativeException: null
+	,__previousException: null
+	,toString: function() {
 		return this.get_message();
 	}
 	,__shiftStack: function() {
@@ -1063,6 +1375,7 @@ haxe_Exception.prototype = $extend(Error.prototype,{
 		}
 	}
 	,__class__: haxe_Exception
+	,__properties__: {get_native:"get_native",get_stack:"get_stack",get_message:"get_message"}
 });
 var haxe_Log = function() { };
 haxe_Log.__name__ = "haxe.Log";
@@ -1242,7 +1555,8 @@ haxe_Timer.delay = function(f,time_ms) {
 	return t;
 };
 haxe_Timer.prototype = {
-	stop: function() {
+	id: null
+	,stop: function() {
 		if(this.id == null) {
 			return;
 		}
@@ -1261,14 +1575,18 @@ var haxe_ValueException = function(value,previous,native) {
 haxe_ValueException.__name__ = "haxe.ValueException";
 haxe_ValueException.__super__ = haxe_Exception;
 haxe_ValueException.prototype = $extend(haxe_Exception.prototype,{
-	__class__: haxe_ValueException
+	value: null
+	,__class__: haxe_ValueException
 });
 var haxe_ds_List = function() {
 	this.length = 0;
 };
 haxe_ds_List.__name__ = "haxe.ds.List";
 haxe_ds_List.prototype = {
-	add: function(item) {
+	h: null
+	,q: null
+	,length: null
+	,add: function(item) {
 		var x = new haxe_ds__$List_ListNode(item,null);
 		if(this.h == null) {
 			this.h = x;
@@ -1289,14 +1607,17 @@ var haxe_ds__$List_ListNode = function(item,next) {
 };
 haxe_ds__$List_ListNode.__name__ = "haxe.ds._List.ListNode";
 haxe_ds__$List_ListNode.prototype = {
-	__class__: haxe_ds__$List_ListNode
+	item: null
+	,next: null
+	,__class__: haxe_ds__$List_ListNode
 };
 var haxe_ds__$List_ListIterator = function(head) {
 	this.head = head;
 };
 haxe_ds__$List_ListIterator.__name__ = "haxe.ds._List.ListIterator";
 haxe_ds__$List_ListIterator.prototype = {
-	hasNext: function() {
+	head: null
+	,hasNext: function() {
 		return this.head != null;
 	}
 	,next: function() {
@@ -1317,7 +1638,34 @@ var haxe_ds_StringMap = function() {
 haxe_ds_StringMap.__name__ = "haxe.ds.StringMap";
 haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
 haxe_ds_StringMap.prototype = {
-	__class__: haxe_ds_StringMap
+	h: null
+	,get: function(key) {
+		return this.h[key];
+	}
+	,keys: function() {
+		return new haxe_ds__$StringMap_StringMapKeyIterator(this.h);
+	}
+	,__class__: haxe_ds_StringMap
+};
+var haxe_ds__$StringMap_StringMapKeyIterator = function(h) {
+	this.h = h;
+	this.keys = Object.keys(h);
+	this.length = this.keys.length;
+	this.current = 0;
+};
+haxe_ds__$StringMap_StringMapKeyIterator.__name__ = "haxe.ds._StringMap.StringMapKeyIterator";
+haxe_ds__$StringMap_StringMapKeyIterator.prototype = {
+	h: null
+	,keys: null
+	,length: null
+	,current: null
+	,hasNext: function() {
+		return this.current < this.length;
+	}
+	,next: function() {
+		return this.keys[this.current++];
+	}
+	,__class__: haxe_ds__$StringMap_StringMapKeyIterator
 };
 var haxe_exceptions_CancellationException = function(message) {
 	haxe_Exception.call(this,message);
@@ -1328,13 +1676,46 @@ haxe_exceptions_CancellationException.__super__ = haxe_Exception;
 haxe_exceptions_CancellationException.prototype = $extend(haxe_Exception.prototype,{
 	__class__: haxe_exceptions_CancellationException
 });
+var haxe_exceptions_PosException = function(message,previous,pos) {
+	haxe_Exception.call(this,message,previous);
+	if(pos == null) {
+		this.posInfos = { fileName : "(unknown)", lineNumber : 0, className : "(unknown)", methodName : "(unknown)"};
+	} else {
+		this.posInfos = pos;
+	}
+	this.__skipStack++;
+};
+haxe_exceptions_PosException.__name__ = "haxe.exceptions.PosException";
+haxe_exceptions_PosException.__super__ = haxe_Exception;
+haxe_exceptions_PosException.prototype = $extend(haxe_Exception.prototype,{
+	posInfos: null
+	,toString: function() {
+		return "" + haxe_Exception.prototype.toString.call(this) + " in " + this.posInfos.className + "." + this.posInfos.methodName + " at " + this.posInfos.fileName + ":" + this.posInfos.lineNumber;
+	}
+	,__class__: haxe_exceptions_PosException
+});
+var haxe_io_Bytes = function(data) {
+	this.length = data.byteLength;
+	this.b = new Uint8Array(data);
+	this.b.bufferValue = data;
+	data.hxBytes = this;
+	data.bytes = this.b;
+};
+haxe_io_Bytes.__name__ = "haxe.io.Bytes";
+haxe_io_Bytes.prototype = {
+	length: null
+	,b: null
+	,__class__: haxe_io_Bytes
+};
 var haxe_iterators_ArrayIterator = function(array) {
 	this.current = 0;
 	this.array = array;
 };
 haxe_iterators_ArrayIterator.__name__ = "haxe.iterators.ArrayIterator";
 haxe_iterators_ArrayIterator.prototype = {
-	hasNext: function() {
+	array: null
+	,current: null
+	,hasNext: function() {
 		return this.current < this.array.length;
 	}
 	,next: function() {
@@ -1531,6 +1912,16 @@ js_Boot.__downcastCheck = function(o,cl) {
 		return true;
 	}
 };
+js_Boot.__implements = function(o,iface) {
+	return js_Boot.__interfLoop(js_Boot.getClass(o),iface);
+};
+js_Boot.__cast = function(o,t) {
+	if(o == null || js_Boot.__instanceof(o,t)) {
+		return o;
+	} else {
+		throw haxe_Exception.thrown("Cannot cast " + Std.string(o) + " to " + Std.string(t));
+	}
+};
 js_Boot.__nativeClassName = function(o) {
 	var name = js_Boot.__toStr.call(o).slice(8,-1);
 	if(name == "Object" || name == "Function" || name == "Math" || name == "JSON") {
@@ -1544,8 +1935,39 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
+var js_node_stream_WritableNewOptionsAdapter = {};
+js_node_stream_WritableNewOptionsAdapter.from = function(options) {
+	if(!Object.prototype.hasOwnProperty.call(options,"final")) {
+		Object.defineProperty(options,"final",{ get : function() {
+			return options.final_;
+		}});
+	}
+	return options;
+};
+var js_node_url_URLSearchParamsEntry = {};
+js_node_url_URLSearchParamsEntry.__properties__ = {get_value:"get_value",get_name:"get_name"};
+js_node_url_URLSearchParamsEntry._new = function(name,value) {
+	return [name,value];
+};
+js_node_url_URLSearchParamsEntry.get_name = function(this1) {
+	return this1[0];
+};
+js_node_url_URLSearchParamsEntry.get_value = function(this1) {
+	return this1[1];
+};
 var utest_Assert = function() { };
 utest_Assert.__name__ = "utest.Assert";
+utest_Assert.processResult = function(cond,getMessage,pos) {
+	if(utest_Assert.results == null) {
+		throw haxe_Exception.thrown("Assert at " + pos.fileName + ":" + pos.lineNumber + " out of context. Most likely you are trying to assert after a test timeout.");
+	}
+	if(cond) {
+		utest_Assert.results.add(utest_Assertation.Success(pos));
+	} else {
+		utest_Assert.results.add(utest_Assertation.Failure(getMessage(),pos));
+	}
+	return cond;
+};
 utest_Assert.isTrue = function(cond,msg,pos) {
 	if(utest_Assert.results == null) {
 		throw haxe_Exception.thrown("Assert at " + pos.fileName + ":" + pos.lineNumber + " out of context. Most likely you are trying to assert after a test timeout.");
@@ -1554,6 +1976,18 @@ utest_Assert.isTrue = function(cond,msg,pos) {
 		utest_Assert.results.add(utest_Assertation.Success(pos));
 	} else {
 		utest_Assert.results.add(utest_Assertation.Failure(msg != null ? msg : "expected true",pos));
+	}
+	return cond;
+};
+utest_Assert.isFalse = function(value,msg,pos) {
+	var cond = value == false;
+	if(utest_Assert.results == null) {
+		throw haxe_Exception.thrown("Assert at " + pos.fileName + ":" + pos.lineNumber + " out of context. Most likely you are trying to assert after a test timeout.");
+	}
+	if(cond) {
+		utest_Assert.results.add(utest_Assertation.Success(pos));
+	} else {
+		utest_Assert.results.add(utest_Assertation.Failure(msg != null ? msg : "expected false",pos));
 	}
 	return cond;
 };
@@ -1569,6 +2003,21 @@ utest_Assert.isNull = function(value,msg,pos) {
 	}
 	return cond;
 };
+utest_Assert.notNull = function(value,msg,pos) {
+	var cond = value != null;
+	if(utest_Assert.results == null) {
+		throw haxe_Exception.thrown("Assert at " + pos.fileName + ":" + pos.lineNumber + " out of context. Most likely you are trying to assert after a test timeout.");
+	}
+	if(cond) {
+		utest_Assert.results.add(utest_Assertation.Success(pos));
+	} else {
+		utest_Assert.results.add(utest_Assertation.Failure(msg != null ? msg : "expected not null",pos));
+	}
+	return cond;
+};
+utest_Assert.is = function(value,type,msg,pos) {
+	return utest_Assert.isOfType(value,type,msg,pos);
+};
 utest_Assert.isOfType = function(value,type,msg,pos) {
 	var cond = js_Boot.__instanceof(value,type);
 	if(utest_Assert.results == null) {
@@ -1578,6 +2027,18 @@ utest_Assert.isOfType = function(value,type,msg,pos) {
 		utest_Assert.results.add(utest_Assertation.Success(pos));
 	} else {
 		utest_Assert.results.add(utest_Assertation.Failure(msg != null ? msg : "expected type " + utest_Assert.typeToString(type) + " but it is " + utest_Assert.typeToString(value),pos));
+	}
+	return cond;
+};
+utest_Assert.notEquals = function(expected,value,msg,pos) {
+	var cond = expected != value;
+	if(utest_Assert.results == null) {
+		throw haxe_Exception.thrown("Assert at " + pos.fileName + ":" + pos.lineNumber + " out of context. Most likely you are trying to assert after a test timeout.");
+	}
+	if(cond) {
+		utest_Assert.results.add(utest_Assertation.Success(pos));
+	} else {
+		utest_Assert.results.add(utest_Assertation.Failure(msg != null ? msg : "expected " + utest_Assert.q(expected) + " and test value " + utest_Assert.q(value) + " should be different",pos));
 	}
 	return cond;
 };
@@ -1593,6 +2054,457 @@ utest_Assert.equals = function(expected,value,msg,pos) {
 	}
 	return cond;
 };
+utest_Assert.match = function(pattern,value,msg,pos) {
+	var cond = pattern.match(value);
+	if(utest_Assert.results == null) {
+		throw haxe_Exception.thrown("Assert at " + pos.fileName + ":" + pos.lineNumber + " out of context. Most likely you are trying to assert after a test timeout.");
+	}
+	if(cond) {
+		utest_Assert.results.add(utest_Assertation.Success(pos));
+	} else {
+		utest_Assert.results.add(utest_Assertation.Failure(msg != null ? msg : "the value " + utest_Assert.q(value) + " does not match the provided pattern",pos));
+	}
+	return cond;
+};
+utest_Assert.floatEquals = function(expected,value,approx,msg,pos) {
+	var cond = utest_Assert._floatEquals(expected,value,approx);
+	if(utest_Assert.results == null) {
+		throw haxe_Exception.thrown("Assert at " + pos.fileName + ":" + pos.lineNumber + " out of context. Most likely you are trying to assert after a test timeout.");
+	}
+	if(cond) {
+		utest_Assert.results.add(utest_Assertation.Success(pos));
+	} else {
+		utest_Assert.results.add(utest_Assertation.Failure(msg != null ? msg : "expected " + utest_Assert.q(expected) + " but it is " + utest_Assert.q(value),pos));
+	}
+	return cond;
+};
+utest_Assert._floatEquals = function(expected,value,approx) {
+	if(isNaN(expected)) {
+		return isNaN(value);
+	} else if(isNaN(value)) {
+		return false;
+	} else if(!isFinite(expected) && !isFinite(value)) {
+		return expected > 0 == value > 0;
+	}
+	if(null == approx) {
+		approx = 1e-5;
+	}
+	return Math.abs(value - expected) <= approx;
+};
+utest_Assert.getTypeName = function(v) {
+	var _g = Type.typeof(v);
+	switch(_g._hx_index) {
+	case 0:
+		return "`null`";
+	case 1:
+		return "Int";
+	case 2:
+		return "Float";
+	case 3:
+		return "Bool";
+	case 4:
+		return "Object";
+	case 5:
+		return "function";
+	case 6:
+		var c = _g.c;
+		return c.__name__;
+	case 7:
+		var e = _g.e;
+		return e.__ename__;
+	case 8:
+		return "`Unknown`";
+	}
+};
+utest_Assert.isIterable = function(v,isAnonym) {
+	var fields = isAnonym ? Reflect.fields(v) : Type.getInstanceFields(js_Boot.getClass(v));
+	if(!Lambda.has(fields,"iterator")) {
+		return false;
+	}
+	return Reflect.isFunction(Reflect.field(v,"iterator"));
+};
+utest_Assert.isIterator = function(v,isAnonym) {
+	var fields = isAnonym ? Reflect.fields(v) : Type.getInstanceFields(js_Boot.getClass(v));
+	if(!Lambda.has(fields,"next") || !Lambda.has(fields,"hasNext")) {
+		return false;
+	}
+	if(Reflect.isFunction(Reflect.field(v,"next"))) {
+		return Reflect.isFunction(Reflect.field(v,"hasNext"));
+	} else {
+		return false;
+	}
+};
+utest_Assert.checkTypesCompatibility = function(expected,value,allowDifferentObjectTypes) {
+	var texpected = utest_Assert.getTypeName(expected);
+	var tvalue = utest_Assert.getTypeName(value);
+	if(texpected == tvalue) {
+		return true;
+	}
+	if(texpected == "Int" && tvalue == "Float" || texpected == "Float" && tvalue == "Int") {
+		return true;
+	}
+	if(allowDifferentObjectTypes) {
+		var valueIsMap = js_Boot.__implements(value,haxe_IMap);
+		var valueIsArray = ((value) instanceof Array);
+		if(js_Boot.__implements(expected,haxe_IMap) && !valueIsMap) {
+			return false;
+		}
+		if(((expected) instanceof Array) && !valueIsArray) {
+			return false;
+		}
+		if(valueIsArray || valueIsMap) {
+			return false;
+		}
+		var isObject = function(v) {
+			var _g = Type.typeof(value);
+			switch(_g._hx_index) {
+			case 4:
+				return true;
+			case 6:
+				if(_g.c == String) {
+					return false;
+				} else {
+					return true;
+				}
+				break;
+			default:
+				return false;
+			}
+		};
+		if(isObject(expected) && isObject(value)) {
+			return true;
+		}
+	}
+	return false;
+};
+utest_Assert.sameAs = function(expected,value,status,approx,allowExtraFields,allowDifferentObjectTypes) {
+	var texpected = utest_Assert.getTypeName(expected);
+	var tvalue = utest_Assert.getTypeName(value);
+	status.expectedValue = expected;
+	status.actualValue = value;
+	if(!utest_Assert.checkTypesCompatibility(expected,value,allowDifferentObjectTypes)) {
+		status.error = "expected type " + texpected + " but it is " + tvalue + (status.path == "" ? "" : " for field " + status.path);
+		return false;
+	}
+	var _g = Type.typeof(expected);
+	switch(_g._hx_index) {
+	case 1:case 2:
+		if(!utest_Assert._floatEquals(expected,value,approx)) {
+			status.error = "expected " + utest_Assert.q(expected) + " but it is " + utest_Assert.q(value) + (status.path == "" ? "" : " for field " + status.path);
+			return false;
+		}
+		return true;
+	case 0:case 3:
+		if(expected != value) {
+			status.error = "expected " + utest_Assert.q(expected) + " but it is " + utest_Assert.q(value) + (status.path == "" ? "" : " for field " + status.path);
+			return false;
+		}
+		return true;
+	case 4:
+		if(status.recursive || status.path == "") {
+			var tfields;
+			var _g1 = Type.typeof(value);
+			switch(_g1._hx_index) {
+			case 4:
+				tfields = Reflect.fields(value);
+				break;
+			case 6:
+				var cls = _g1.c;
+				tfields = Type.getInstanceFields(cls);
+				break;
+			default:
+				throw new haxe_exceptions_PosException("Unexpected behavior",null,{ fileName : "utest/Assert.hx", lineNumber : 483, className : "utest.Assert", methodName : "sameAs"});
+			}
+			var fields = Reflect.fields(expected);
+			var path = status.path;
+			var _g1 = 0;
+			while(_g1 < fields.length) {
+				var field = fields[_g1];
+				++_g1;
+				status.path = path == "" ? field : path + "." + field;
+				if(!allowExtraFields && tfields.indexOf(field) == -1) {
+					status.error = "expected field " + status.path + " does not exist in " + utest_Assert.q(value);
+					return false;
+				}
+				HxOverrides.remove(tfields,field);
+				var e = Reflect.field(expected,field);
+				if(Reflect.isFunction(e)) {
+					continue;
+				}
+				var v = Reflect.getProperty(value,field);
+				if(!utest_Assert.sameAs(e,v,status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+					return false;
+				}
+			}
+			if(!allowExtraFields && tfields.length > 0) {
+				status.error = "the tested object has extra field(s) (" + tfields.join(", ") + ") not included in the expected ones";
+				return false;
+			}
+		}
+		if(utest_Assert.isIterator(expected,true)) {
+			if(!utest_Assert.isIterator(value,true)) {
+				status.error = "expected Iterable but it is not " + (status.path == "" ? "" : " for field " + status.path);
+				return false;
+			}
+			if(status.recursive || status.path == "") {
+				var evalues = Lambda.array({ iterator : function() {
+					return expected;
+				}});
+				var vvalues = Lambda.array({ iterator : function() {
+					return value;
+				}});
+				if(!allowExtraFields && evalues.length != vvalues.length) {
+					status.error = "expected " + evalues.length + " values in Iterator but they are " + vvalues.length + (status.path == "" ? "" : " for field " + status.path);
+					return false;
+				}
+				var path = status.path;
+				var _g1 = 0;
+				var _g2 = evalues.length;
+				while(_g1 < _g2) {
+					var i = _g1++;
+					status.path = path == "" ? "iterator[" + i + "]" : path + "[" + i + "]";
+					if(!utest_Assert.sameAs(evalues[i],vvalues[i],status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+						status.error = "expected " + utest_Assert.q(status.expectedValue) + " but it is " + utest_Assert.q(status.actualValue) + (status.path == "" ? "" : " for field " + status.path);
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(utest_Assert.isIterable(expected,true)) {
+			if(!utest_Assert.isIterable(value,true)) {
+				status.error = "expected Iterator but it is not " + (status.path == "" ? "" : " for field " + status.path);
+				return false;
+			}
+			if(status.recursive || status.path == "") {
+				var evalues = Lambda.array(expected);
+				var vvalues = Lambda.array(value);
+				if(!allowExtraFields && evalues.length != vvalues.length) {
+					status.error = "expected " + evalues.length + " values in Iterable but they are " + vvalues.length + (status.path == "" ? "" : " for field " + status.path);
+					return false;
+				}
+				var path = status.path;
+				var _g1 = 0;
+				var _g2 = evalues.length;
+				while(_g1 < _g2) {
+					var i = _g1++;
+					status.path = path == "" ? "iterable[" + i + "]" : path + "[" + i + "]";
+					if(!utest_Assert.sameAs(evalues[i],vvalues[i],status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		return true;
+	case 5:
+		if(expected != value) {
+			status.error = "expected same function reference" + (status.path == "" ? "" : " for field " + status.path);
+			return false;
+		}
+		return true;
+	case 6:
+		if(!allowExtraFields && texpected != tvalue) {
+			status.error = "expected instance of " + utest_Assert.q(texpected) + " but it is " + utest_Assert.q(tvalue) + (status.path == "" ? "" : " for field " + status.path);
+			return false;
+		}
+		if(typeof(expected) == "string") {
+			if(expected == value) {
+				return true;
+			} else {
+				status.error = "expected string '" + (expected == null ? "null" : Std.string(expected)) + "' but it is '" + (value == null ? "null" : Std.string(value)) + "'";
+				return false;
+			}
+		}
+		if(((expected) instanceof Array)) {
+			if(status.recursive || status.path == "") {
+				var expected1 = expected;
+				var value1 = value;
+				if(!allowExtraFields && expected1.length != value1.length) {
+					status.error = "expected " + expected1.length + " elements but they are " + value1.length + (status.path == "" ? "" : " for field " + status.path);
+					return false;
+				}
+				var path = status.path;
+				var _g1 = 0;
+				var _g2 = expected1.length;
+				while(_g1 < _g2) {
+					var i = _g1++;
+					status.path = path == "" ? "array[" + i + "]" : path + "[" + i + "]";
+					if(!utest_Assert.sameAs(expected1[i],value1[i],status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+						status.error = "expected array element at [" + i + "] to have " + utest_Assert.q(status.expectedValue) + " but it is " + utest_Assert.q(status.actualValue) + (status.path == "" ? "" : " for field " + status.path);
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(((expected) instanceof Date)) {
+			var expected1 = expected;
+			var value1 = value;
+			if(expected1.getTime() != value1.getTime()) {
+				status.error = "expected " + utest_Assert.q(expected1) + " but it is " + utest_Assert.q(value1) + (status.path == "" ? "" : " for field " + status.path);
+				return false;
+			}
+			return true;
+		}
+		if(((expected) instanceof haxe_io_Bytes)) {
+			if(status.recursive || status.path == "") {
+				var ebytes = expected;
+				var vbytes = value;
+				if(ebytes.length != vbytes.length) {
+					status.error = "expected " + ebytes.length + " bytes length but it is " + vbytes.length;
+					return false;
+				}
+				var _g1 = 0;
+				var _g2 = ebytes.length;
+				while(_g1 < _g2) {
+					var i = _g1++;
+					if(ebytes.b[i] != vbytes.b[i]) {
+						status.error = "expected byte #" + i + " to be " + ebytes.b[i] + " but it is " + vbytes.b[i] + (status.path == "" ? "" : " for field " + status.path);
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(js_Boot.__implements(expected,haxe_IMap)) {
+			if(status.recursive || status.path == "") {
+				var map = js_Boot.__cast(expected , haxe_IMap);
+				var vmap = js_Boot.__cast(value , haxe_IMap);
+				var _g1 = [];
+				var k = map.keys();
+				while(k.hasNext()) {
+					var k1 = k.next();
+					_g1.push(k1);
+				}
+				var keys = _g1;
+				var _g1 = [];
+				var k = vmap.keys();
+				while(k.hasNext()) {
+					var k1 = k.next();
+					_g1.push(k1);
+				}
+				var vkeys = _g1;
+				if(!allowExtraFields && keys.length != vkeys.length) {
+					status.error = "expected " + keys.length + " keys but they are " + vkeys.length + (status.path == "" ? "" : " for field " + status.path);
+					return false;
+				}
+				var path = status.path;
+				var _g1 = 0;
+				while(_g1 < keys.length) {
+					var key = keys[_g1];
+					++_g1;
+					status.path = path == "" ? "hash[" + (key == null ? "null" : Std.string(key)) + "]" : path + "[" + (key == null ? "null" : Std.string(key)) + "]";
+					if(!utest_Assert.sameAs(map.get(key),vmap.get(key),status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+						status.error = "expected " + utest_Assert.q(status.expectedValue) + " but it is " + utest_Assert.q(status.actualValue) + (status.path == "" ? "" : " for field " + status.path);
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(utest_Assert.isIterator(expected,false)) {
+			if(status.recursive || status.path == "") {
+				var evalues = Lambda.array({ iterator : function() {
+					return expected;
+				}});
+				var vvalues = Lambda.array({ iterator : function() {
+					return value;
+				}});
+				if(!allowExtraFields && evalues.length != vvalues.length) {
+					status.error = "expected " + evalues.length + " values in Iterator but they are " + vvalues.length + (status.path == "" ? "" : " for field " + status.path);
+					return false;
+				}
+				var path = status.path;
+				var _g1 = 0;
+				var _g2 = evalues.length;
+				while(_g1 < _g2) {
+					var i = _g1++;
+					status.path = path == "" ? "iterator[" + i + "]" : path + "[" + i + "]";
+					if(!utest_Assert.sameAs(evalues[i],vvalues[i],status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+						status.error = "expected " + utest_Assert.q(status.expectedValue) + " but it is " + utest_Assert.q(status.actualValue) + (status.path == "" ? "" : " for field " + status.path);
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(utest_Assert.isIterable(expected,false)) {
+			if(status.recursive || status.path == "") {
+				var evalues = Lambda.array(expected);
+				var vvalues = Lambda.array(value);
+				if(!allowExtraFields && evalues.length != vvalues.length) {
+					status.error = "expected " + evalues.length + " values in Iterable but they are " + vvalues.length + (status.path == "" ? "" : " for field " + status.path);
+					return false;
+				}
+				var path = status.path;
+				var _g1 = 0;
+				var _g2 = evalues.length;
+				while(_g1 < _g2) {
+					var i = _g1++;
+					status.path = path == "" ? "iterable[" + i + "]" : path + "[" + i + "]";
+					if(!utest_Assert.sameAs(evalues[i],vvalues[i],status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		if(status.recursive || status.path == "") {
+			var fields = Type.getInstanceFields(js_Boot.getClass(expected));
+			var path = status.path;
+			var _g1 = 0;
+			while(_g1 < fields.length) {
+				var field = fields[_g1];
+				++_g1;
+				status.path = path == "" ? field : path + "." + field;
+				var e = Reflect.getProperty(expected,field);
+				if(Reflect.isFunction(e)) {
+					continue;
+				}
+				var v = Reflect.getProperty(value,field);
+				if(!utest_Assert.sameAs(e,v,status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	case 7:
+		var e = _g.e;
+		var eexpected = e.__ename__;
+		var e = Type.getEnum(value);
+		var evalue = e.__ename__;
+		if(eexpected != evalue) {
+			status.error = "expected enumeration of " + utest_Assert.q(eexpected) + " but it is " + utest_Assert.q(evalue) + (status.path == "" ? "" : " for field " + status.path);
+			return false;
+		}
+		if(status.recursive || status.path == "") {
+			if(expected._hx_index != value._hx_index) {
+				var e = expected;
+				var tmp = "expected enum constructor " + utest_Assert.q($hxEnums[e.__enum__].__constructs__[e._hx_index]._hx_name) + " but it is ";
+				var e = value;
+				status.error = tmp + utest_Assert.q($hxEnums[e.__enum__].__constructs__[e._hx_index]._hx_name) + (status.path == "" ? "" : " for field " + status.path);
+				return false;
+			}
+			var eparams = Type.enumParameters(expected);
+			var vparams = Type.enumParameters(value);
+			var path = status.path;
+			var _g = 0;
+			var _g1 = eparams.length;
+			while(_g < _g1) {
+				var i = _g++;
+				status.path = path == "" ? "enum[" + i + "]" : path + "[" + i + "]";
+				if(!utest_Assert.sameAs(eparams[i],vparams[i],status,approx,allowExtraFields,allowDifferentObjectTypes)) {
+					status.error = "expected enum param " + utest_Assert.q(expected) + " but it is " + utest_Assert.q(value) + (status.path == "" ? "" : " for field " + status.path) + " with " + status.error;
+					return false;
+				}
+			}
+		}
+		return true;
+	case 8:
+		throw haxe_Exception.thrown("Unable to compare two unknown types");
+	}
+};
 utest_Assert.q = function(v) {
 	if(typeof(v) == "string") {
 		return "\"" + StringTools.replace(v,"\"","\\\"") + "\"";
@@ -1601,6 +2513,148 @@ utest_Assert.q = function(v) {
 	} else {
 		return Std.string(v);
 	}
+};
+utest_Assert.same = function(expected,value,recursive,msg,approx,pos) {
+	if(null == approx) {
+		approx = 1e-5;
+	}
+	var status = { recursive : null == recursive ? true : recursive, path : "", error : null, expectedValue : expected, actualValue : value};
+	if(utest_Assert.sameAs(expected,value,status,approx,false,false)) {
+		return utest_Assert.pass(msg,pos);
+	} else {
+		return utest_Assert.fail(msg == null ? status.error : msg,pos);
+	}
+};
+utest_Assert.similar = function(expected,value,recursive,msg,approx,pos) {
+	if(approx == null) {
+		approx = 1e-5;
+	}
+	if(recursive == null) {
+		recursive = true;
+	}
+	var status = { recursive : recursive, path : "", error : null, expectedValue : expected, actualValue : value};
+	if(utest_Assert.sameAs(expected,value,status,approx,true,true)) {
+		return utest_Assert.pass(msg,pos);
+	} else {
+		return utest_Assert.fail(msg == null ? status.error : msg,pos);
+	}
+};
+utest_Assert.raises = function(method,type,msgNotThrown,msgWrongType,pos) {
+	return utest_Assert._raisesImpl(method,type,function(_) {
+		return true;
+	},msgNotThrown,msgWrongType,null,pos);
+};
+utest_Assert.exception = function(method,type,condition,msgNotThrown,msgWrongType,msgWrongCondition,pos) {
+	return utest_Assert._raisesImpl(method,type,condition,msgNotThrown,msgWrongType,msgWrongCondition,pos);
+};
+utest_Assert._raisesImpl = function(method,type,condition,msgNotThrown,msgWrongType,msgWrongCondition,pos) {
+	var typeDescr = type != null ? "exception of type " + type.__name__ : "exception";
+	try {
+		method();
+	} catch( _g ) {
+		var ex = haxe_Exception.caught(_g);
+		var ex1 = ((ex) instanceof haxe_ValueException) ? ex.value : ex;
+		if(null == type) {
+			if(null == condition) {
+				return utest_Assert.pass(null,pos);
+			} else {
+				if(null == msgWrongCondition) {
+					msgWrongCondition = "" + typeDescr + " is raised, but condition failed";
+				}
+				return utest_Assert.isTrue(condition(ex1),msgWrongCondition,pos);
+			}
+		} else {
+			if(null == msgWrongType) {
+				msgWrongType = "expected " + typeDescr + " but it is " + (ex1 == null ? "null" : Std.string(ex1));
+			}
+			if(utest_Assert.isTrue(js_Boot.__instanceof(ex1,type),msgWrongType,pos)) {
+				if(null == condition) {
+					return utest_Assert.pass(null,pos);
+				} else {
+					if(null == msgWrongCondition) {
+						msgWrongCondition = "" + typeDescr + " is raised, but condition failed";
+					}
+					return utest_Assert.isTrue(condition(ex1),msgWrongCondition,pos);
+				}
+			} else {
+				return false;
+			}
+		}
+	}
+	if(null == msgNotThrown) {
+		msgNotThrown = typeDescr + " not raised";
+	}
+	return utest_Assert.fail(msgNotThrown,pos);
+};
+utest_Assert.allows = function(possibilities,value,msg,pos) {
+	if(Lambda.has(possibilities,value)) {
+		return utest_Assert.isTrue(true,msg,pos);
+	} else {
+		return utest_Assert.fail(msg == null ? "value " + utest_Assert.q(value) + " not found in the expected possibilities " + Std.string(possibilities) : msg,pos);
+	}
+};
+utest_Assert.contains = function(match,values,msg,pos) {
+	return utest_Assert.isTrue(values.indexOf(match) != -1,msg == null ? "values " + utest_Assert.q(values) + " do not contain " + Std.string(match) : msg,pos);
+};
+utest_Assert.notContains = function(match,values,msg,pos) {
+	return utest_Assert.isFalse(values.indexOf(match) != -1,msg == null ? "values " + utest_Assert.q(values) + " do contain " + Std.string(match) : msg,pos);
+};
+utest_Assert.stringContains = function(match,value,msg,pos) {
+	if(value != null && value.indexOf(match) >= 0) {
+		return utest_Assert.isTrue(true,msg,pos);
+	} else {
+		return utest_Assert.fail(msg == null ? "value " + utest_Assert.q(value) + " does not contain " + utest_Assert.q(match) : msg,pos);
+	}
+};
+utest_Assert.stringSequence = function(sequence,value,msg,pos) {
+	if(null == value) {
+		return utest_Assert.fail(msg == null ? "null argument value" : msg,pos);
+	}
+	var p = 0;
+	var _g = 0;
+	while(_g < sequence.length) {
+		var s = sequence[_g];
+		++_g;
+		var p2 = value.indexOf(s,p);
+		if(p2 < 0) {
+			if(msg == null) {
+				msg = "expected '" + s + "' after ";
+				if(p > 0) {
+					var cut = HxOverrides.substr(value,0,p);
+					if(cut.length > 30) {
+						cut = "..." + HxOverrides.substr(cut,-27,null);
+					}
+					msg += " '" + cut + "'";
+				} else {
+					msg += " begin";
+				}
+			}
+			return utest_Assert.fail(msg,pos);
+		}
+		p = p2 + s.length;
+	}
+	return utest_Assert.isTrue(true,msg,pos);
+};
+utest_Assert.pass = function(msg,pos) {
+	if(msg == null) {
+		msg = "pass expected";
+	}
+	return utest_Assert.isTrue(true,msg,pos);
+};
+utest_Assert.fail = function(msg,pos) {
+	if(msg == null) {
+		msg = "failure expected";
+	}
+	return utest_Assert.isTrue(false,msg,pos);
+};
+utest_Assert.warn = function(msg) {
+	utest_Assert.results.add(utest_Assertation.Warning(msg));
+};
+utest_Assert.createAsync = function(f,timeout) {
+	throw new utest_exceptions_UTestException("Assert.createAsync() is not supported since UTest 2.0. Add `async:utest.Async` argument to the test method instead.");
+};
+utest_Assert.createEvent = function(f,timeout) {
+	throw new utest_exceptions_UTestException("Assert.createEvent() is not supported since UTest 2.0. Add `async:utest.Async` argument to the test method instead.");
 };
 utest_Assert.typeToString = function(t) {
 	try {
@@ -1655,6 +2709,7 @@ var utest_Async = function(timeoutMs) {
 	if(timeoutMs == null) {
 		timeoutMs = 250;
 	}
+	this.branches = [];
 	this.callbacks = [];
 	this.timedOut = false;
 	this.resolved = false;
@@ -1671,8 +2726,18 @@ utest_Async.getResolved = function() {
 	}
 	return utest_Async.resolvedInstance;
 };
+utest_Async.strPos = function(pos) {
+	return pos.fileName + ":" + pos.lineNumber;
+};
 utest_Async.prototype = {
-	done: function(pos) {
+	resolved: null
+	,timedOut: null
+	,callbacks: null
+	,timeoutMs: null
+	,startTime: null
+	,timer: null
+	,branches: null
+	,done: function(pos) {
 		if(this.resolved) {
 			if(this.timedOut) {
 				throw haxe_Exception.thrown("Cannot done() at " + (pos.fileName + ":" + pos.lineNumber) + " because async is timed out.");
@@ -1689,6 +2754,57 @@ utest_Async.prototype = {
 			++_g;
 			cb();
 		}
+	}
+	,setTimeout: function(timeoutMs,pos) {
+		if(this.resolved) {
+			throw haxe_Exception.thrown("Cannot setTimeout(" + timeoutMs + ") at " + (pos.fileName + ":" + pos.lineNumber) + " because async is done.");
+		}
+		if(this.timedOut) {
+			throw haxe_Exception.thrown("Cannot setTimeout(" + timeoutMs + ") at " + (pos.fileName + ":" + pos.lineNumber) + " because async is timed out.");
+		}
+		this.timer.stop();
+		this.timeoutMs = timeoutMs;
+		var hrtime = process.hrtime();
+		var delay = timeoutMs - Math.round(1000 * (hrtime[0] + hrtime[1] / 1e9 - this.startTime));
+		this.timer = haxe_Timer.delay($bind(this,this.setTimedOutState),delay);
+	}
+	,branch: function(fn,pos) {
+		var branch = new utest_Async(this.timeoutMs);
+		this.branches.push(branch);
+		var _g = this;
+		var pos1 = pos;
+		branch.then(function() {
+			_g.checkBranches(pos1);
+		});
+		if(fn != null) {
+			fn(branch);
+		}
+		return branch;
+	}
+	,checkBranches: function(pos) {
+		var _gthis = this;
+		if(this.resolved) {
+			return;
+		}
+		var _g = 0;
+		var _g1 = this.branches;
+		while(_g < _g1.length) {
+			var branch = _g1[_g];
+			++_g;
+			if(!branch.resolved) {
+				return;
+			}
+			if(branch.timedOut) {
+				this.setTimedOutState();
+				return;
+			}
+		}
+		var branchCount = this.branches.length;
+		haxe_Timer.delay(function() {
+			if(branchCount == _gthis.branches.length) {
+				_gthis.done(pos);
+			}
+		},5);
 	}
 	,then: function(cb) {
 		if(this.resolved) {
@@ -1719,10 +2835,28 @@ var utest_Dispatcher = function() {
 	this.handlers = [];
 };
 utest_Dispatcher.__name__ = "utest.Dispatcher";
+utest_Dispatcher.stop = function() {
+	throw new utest__$Dispatcher_StopPropagationException();
+};
 utest_Dispatcher.prototype = {
-	add: function(h) {
+	handlers: null
+	,add: function(h) {
 		this.handlers.push(h);
 		return h;
+	}
+	,remove: function(h) {
+		var _g = 0;
+		var _g1 = this.handlers.length;
+		while(_g < _g1) {
+			var i = _g++;
+			if(this.handlers[i] == h) {
+				return this.handlers.splice(i,1)[0];
+			}
+		}
+		return null;
+	}
+	,clear: function() {
+		this.handlers = [];
 	}
 	,dispatch: function(e) {
 		try {
@@ -1742,14 +2876,39 @@ utest_Dispatcher.prototype = {
 			}
 		}
 	}
+	,has: function() {
+		return this.handlers.length > 0;
+	}
 	,__class__: utest_Dispatcher
 };
 var utest_Notifier = function() {
 	this.handlers = [];
 };
 utest_Notifier.__name__ = "utest.Notifier";
+utest_Notifier.stop = function() {
+	throw new utest__$Dispatcher_StopPropagationException();
+};
 utest_Notifier.prototype = {
-	dispatch: function() {
+	handlers: null
+	,add: function(h) {
+		this.handlers.push(h);
+		return h;
+	}
+	,remove: function(h) {
+		var _g = 0;
+		var _g1 = this.handlers.length;
+		while(_g < _g1) {
+			var i = _g++;
+			if(this.handlers[i] == h) {
+				return this.handlers.splice(i,1)[0];
+			}
+		}
+		return null;
+	}
+	,clear: function() {
+		this.handlers = [];
+	}
+	,dispatch: function() {
 		try {
 			var list = this.handlers.slice();
 			var _g = 0;
@@ -1767,14 +2926,27 @@ utest_Notifier.prototype = {
 			}
 		}
 	}
+	,has: function() {
+		return this.handlers.length > 0;
+	}
 	,__class__: utest_Notifier
 };
 var utest_IgnoredFixture = {};
+utest_IgnoredFixture.__properties__ = {get_ignoreReason:"get_ignoreReason",get_isIgnored:"get_isIgnored"};
 utest_IgnoredFixture.NotIgnored = function() {
 	return null;
 };
 utest_IgnoredFixture.Ignored = function(reason) {
 	return reason != null ? reason : "";
+};
+utest_IgnoredFixture._new = function(reason) {
+	return reason;
+};
+utest_IgnoredFixture.get_isIgnored = function(this1) {
+	return this1 != null;
+};
+utest_IgnoredFixture.get_ignoreReason = function(this1) {
+	return this1;
 };
 var utest_Runner = function() {
 	this.executedFixtures = 0;
@@ -1791,7 +2963,17 @@ var utest_Runner = function() {
 };
 utest_Runner.__name__ = "utest.Runner";
 utest_Runner.prototype = {
-	addCase: function(testCase,pattern) {
+	fixtures: null
+	,onProgress: null
+	,onStart: null
+	,onComplete: null
+	,onPrecheck: null
+	,onTestStart: null
+	,onTestComplete: null
+	,length: null
+	,globalPattern: null
+	,complete: null
+	,addCase: function(testCase,pattern) {
 		var c = js_Boot.getClass(testCase);
 		var className = c.__name__;
 		if(Object.prototype.hasOwnProperty.call(this.fixtures.h,className)) {
@@ -1851,6 +3033,7 @@ utest_Runner.prototype = {
 		handler.execute();
 		return handler;
 	}
+	,executedFixtures: null
 	,testComplete: function(h) {
 		++this.executedFixtures;
 		this.onTestComplete.dispatch(h);
@@ -1881,7 +3064,18 @@ var utest__$Runner_ITestRunner = function(runner) {
 };
 utest__$Runner_ITestRunner.__name__ = "utest._Runner.ITestRunner";
 utest__$Runner_ITestRunner.prototype = {
-	run: function() {
+	runner: null
+	,cases: null
+	,currentCaseName: null
+	,currentCase: null
+	,currentCaseFixtures: null
+	,teardownClass: null
+	,setupAsync: null
+	,teardownAsync: null
+	,failedTestsInCurrentCase: null
+	,executedTestsInCurrentCase: null
+	,failedCases: null
+	,run: function() {
 		this.cases = this.orderClassesByDependencies();
 		this.runCases();
 	}
@@ -2042,6 +3236,8 @@ utest__$Runner_ITestRunner.prototype = {
 	}
 	,__class__: utest__$Runner_ITestRunner
 };
+var utest_AccessoryName = function() { };
+utest_AccessoryName.__name__ = "utest.AccessoryName";
 var utest_TestFixture = function(target,test,accessories) {
 	this.target = target;
 	this.test = test;
@@ -2061,13 +3257,19 @@ var utest_TestFixture = function(target,test,accessories) {
 };
 utest_TestFixture.__name__ = "utest.TestFixture";
 utest_TestFixture.prototype = {
-	get_name: function() {
+	target: null
+	,ignoringInfo: null
+	,get_name: function() {
 		return this.test.name;
 	}
+	,test: null
+	,setupMethod: null
+	,teardownMethod: null
 	,setIgnoringInfo: function(info) {
 		this.ignoringInfo = info;
 	}
 	,__class__: utest_TestFixture
+	,__properties__: {get_name:"get_name"}
 };
 var utest_TestHandler = function(fixture) {
 	this.wasBound = false;
@@ -2095,7 +3297,24 @@ var utest_TestHandler = function(fixture) {
 };
 utest_TestHandler.__name__ = "utest.TestHandler";
 utest_TestHandler.prototype = {
-	execute: function() {
+	results: null
+	,fixture: null
+	,finished: null
+	,executionTime: null
+	,asyncStack: null
+	,startTime: null
+	,onTested: null
+	,onTimeout: null
+	,onComplete: null
+	,onPrecheck: null
+	,precheck: null
+	,wasBound: null
+	,testCase: null
+	,test: null
+	,setupAsync: null
+	,testAsync: null
+	,teardownAsync: null
+	,execute: function() {
 		var hrtime = process.hrtime();
 		this.startTime = hrtime[0] + hrtime[1] / 1e9;
 		if(this.fixture.ignoringInfo != null) {
@@ -2222,6 +3441,11 @@ utest_TestHandler.prototype = {
 		this.onTested.dispatch(this);
 		this.completedFinally();
 	}
+	,timeout: function() {
+		this.results.add(utest_Assertation.TimeoutError(this.asyncStack.length,[]));
+		this.onTimeout.dispatch(this);
+		this.completedFinally();
+	}
 	,completedFinally: function() {
 		this.finished = true;
 		this.unbindHandler();
@@ -2268,7 +3492,27 @@ utest_TestResult.ofFailedTeardownClass = function(testCase,assertation) {
 	return r;
 };
 utest_TestResult.prototype = {
-	__class__: utest_TestResult
+	pack: null
+	,cls: null
+	,method: null
+	,setup: null
+	,setupAsync: null
+	,teardown: null
+	,teardownAsync: null
+	,assertations: null
+	,executionTime: null
+	,allOk: function() {
+		var _g_head = this.assertations.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			if(val._hx_index != 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+	,__class__: utest_TestResult
 };
 var utest_UTest = function() { };
 utest_UTest.__name__ = "utest.UTest";
@@ -2296,6 +3540,15 @@ utest_exceptions_UTestException.__name__ = "utest.exceptions.UTestException";
 utest_exceptions_UTestException.__super__ = haxe_Exception;
 utest_exceptions_UTestException.prototype = $extend(haxe_Exception.prototype,{
 	__class__: utest_exceptions_UTestException
+});
+var utest_exceptions_AssertFailureException = function(message,previous,native) {
+	utest_exceptions_UTestException.call(this,message,previous,native);
+	this.__skipStack++;
+};
+utest_exceptions_AssertFailureException.__name__ = "utest.exceptions.AssertFailureException";
+utest_exceptions_AssertFailureException.__super__ = utest_exceptions_UTestException;
+utest_exceptions_AssertFailureException.prototype = $extend(utest_exceptions_UTestException.prototype,{
+	__class__: utest_exceptions_AssertFailureException
 });
 var utest_ui_Report = function() { };
 utest_ui_Report.__name__ = "utest.ui.Report";
@@ -2325,7 +3578,15 @@ var utest_ui_common_ClassResult = function(className,setupName,teardownName) {
 };
 utest_ui_common_ClassResult.__name__ = "utest.ui.common.ClassResult";
 utest_ui_common_ClassResult.prototype = {
-	add: function(result) {
+	fixtures: null
+	,className: null
+	,setupName: null
+	,teardownName: null
+	,hasSetup: null
+	,hasTeardown: null
+	,methods: null
+	,stats: null
+	,add: function(result) {
 		if(Object.prototype.hasOwnProperty.call(this.fixtures.h,result.methodName)) {
 			throw haxe_Exception.thrown("invalid duplicated fixture: " + this.className + "." + result.methodName);
 		}
@@ -2335,6 +3596,9 @@ utest_ui_common_ClassResult.prototype = {
 	}
 	,get: function(method) {
 		return this.fixtures.h[method];
+	}
+	,exists: function(method) {
+		return Object.prototype.hasOwnProperty.call(this.fixtures.h,method);
 	}
 	,methodNames: function(errorsHavePriority) {
 		if(errorsHavePriority == null) {
@@ -2410,7 +3674,16 @@ var utest_ui_common_FixtureResult = function(methodName,executionTime) {
 };
 utest_ui_common_FixtureResult.__name__ = "utest.ui.common.FixtureResult";
 utest_ui_common_FixtureResult.prototype = {
-	iterator: function() {
+	methodName: null
+	,hasTestError: null
+	,hasSetupError: null
+	,hasTeardownError: null
+	,hasTimeoutError: null
+	,hasAsyncError: null
+	,executionTime: null
+	,stats: null
+	,list: null
+	,iterator: function() {
 		return new haxe_ds__$List_ListIterator(this.list.h);
 	}
 	,add: function(assertation) {
@@ -2467,7 +3740,10 @@ var utest_ui_common_IReport = function() { };
 utest_ui_common_IReport.__name__ = "utest.ui.common.IReport";
 utest_ui_common_IReport.__isInterface__ = true;
 utest_ui_common_IReport.prototype = {
-	__class__: utest_ui_common_IReport
+	displaySuccessResults: null
+	,displayHeader: null
+	,setHandler: null
+	,__class__: utest_ui_common_IReport
 };
 var utest_ui_common_PackageResult = function(packageName) {
 	this.isEmpty = true;
@@ -2478,7 +3754,12 @@ var utest_ui_common_PackageResult = function(packageName) {
 };
 utest_ui_common_PackageResult.__name__ = "utest.ui.common.PackageResult";
 utest_ui_common_PackageResult.prototype = {
-	addResult: function(result,flattenPackage) {
+	packageName: null
+	,isEmpty: null
+	,classes: null
+	,packages: null
+	,stats: null
+	,addResult: function(result,flattenPackage) {
 		this.isEmpty = false;
 		var pack = this.getOrCreatePackage(result.pack,flattenPackage,this);
 		var cls = this.getOrCreateClass(pack,result.cls,result.setup,result.teardown);
@@ -2706,6 +3987,12 @@ utest_ui_common_ReportTools.skipResult = function(report,stats,isOk) {
 		return !isOk;
 	}
 };
+utest_ui_common_ReportTools.hasOutput = function(report,stats) {
+	if(!stats.isOk) {
+		return true;
+	}
+	return utest_ui_common_ReportTools.hasHeader(report,stats);
+};
 var utest_ui_common_ResultAggregator = function(runner,flattenPackage) {
 	if(flattenPackage == null) {
 		flattenPackage = false;
@@ -2724,9 +4011,58 @@ var utest_ui_common_ResultAggregator = function(runner,flattenPackage) {
 };
 utest_ui_common_ResultAggregator.__name__ = "utest.ui.common.ResultAggregator";
 utest_ui_common_ResultAggregator.prototype = {
-	start: function(runner) {
+	runner: null
+	,flattenPackage: null
+	,root: null
+	,onStart: null
+	,onComplete: null
+	,onProgress: null
+	,start: function(runner) {
 		this.root = new utest_ui_common_PackageResult(null);
 		this.onStart.dispatch();
+	}
+	,getOrCreatePackage: function(pack,flat,ref) {
+		if(ref == null) {
+			ref = this.root;
+		}
+		if(pack == null || pack == "") {
+			return ref;
+		}
+		if(flat) {
+			if(ref.existsPackage(pack)) {
+				return ref.getPackage(pack);
+			}
+			var p = new utest_ui_common_PackageResult(pack);
+			ref.addPackage(p);
+			return p;
+		} else {
+			var parts = pack.split(".");
+			var _g = 0;
+			while(_g < parts.length) {
+				var part = parts[_g];
+				++_g;
+				ref = this.getOrCreatePackage(part,true,ref);
+			}
+			return ref;
+		}
+	}
+	,getOrCreateClass: function(pack,cls,setup,teardown) {
+		if(pack.existsClass(cls)) {
+			return pack.getClass(cls);
+		}
+		var c = new utest_ui_common_ClassResult(cls,setup,teardown);
+		pack.addClass(c);
+		return c;
+	}
+	,createFixture: function(result) {
+		var f = new utest_ui_common_FixtureResult(result.method,result.executionTime);
+		var _g_head = result.assertations.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			f.add(val);
+		}
+		return f;
 	}
 	,progress: function(e) {
 		this.root.addResult(e.result,this.flattenPackage);
@@ -2770,7 +4106,23 @@ var utest_ui_common_ResultStats = function() {
 };
 utest_ui_common_ResultStats.__name__ = "utest.ui.common.ResultStats";
 utest_ui_common_ResultStats.prototype = {
-	addSuccesses: function(v) {
+	assertations: null
+	,successes: null
+	,failures: null
+	,errors: null
+	,warnings: null
+	,ignores: null
+	,onAddSuccesses: null
+	,onAddFailures: null
+	,onAddErrors: null
+	,onAddWarnings: null
+	,onAddIgnores: null
+	,isOk: null
+	,hasFailures: null
+	,hasErrors: null
+	,hasWarnings: null
+	,hasIgnores: null
+	,addSuccesses: function(v) {
 		if(v == 0) {
 			return;
 		}
@@ -2824,6 +4176,13 @@ utest_ui_common_ResultStats.prototype = {
 		this.addWarnings(other.warnings);
 		this.addIgnores(other.ignores);
 	}
+	,subtract: function(other) {
+		this.addSuccesses(-other.successes);
+		this.addFailures(-other.failures);
+		this.addErrors(-other.errors);
+		this.addWarnings(-other.warnings);
+		this.addIgnores(-other.ignores);
+	}
 	,wire: function(dependant) {
 		dependant.onAddSuccesses.add($bind(this,this.addSuccesses));
 		dependant.onAddFailures.add($bind(this,this.addFailures));
@@ -2831,6 +4190,14 @@ utest_ui_common_ResultStats.prototype = {
 		dependant.onAddWarnings.add($bind(this,this.addWarnings));
 		dependant.onAddIgnores.add($bind(this,this.addIgnores));
 		this.sum(dependant);
+	}
+	,unwire: function(dependant) {
+		dependant.onAddSuccesses.remove($bind(this,this.addSuccesses));
+		dependant.onAddFailures.remove($bind(this,this.addFailures));
+		dependant.onAddErrors.remove($bind(this,this.addErrors));
+		dependant.onAddWarnings.remove($bind(this,this.addWarnings));
+		dependant.onAddIgnores.remove($bind(this,this.addIgnores));
+		this.subtract(dependant);
 	}
 	,__class__: utest_ui_common_ResultStats
 };
@@ -2847,9 +4214,16 @@ var utest_ui_text_PlainTextReport = function(runner,outputHandler) {
 utest_ui_text_PlainTextReport.__name__ = "utest.ui.text.PlainTextReport";
 utest_ui_text_PlainTextReport.__interfaces__ = [utest_ui_common_IReport];
 utest_ui_text_PlainTextReport.prototype = {
-	setHandler: function(handler) {
+	displaySuccessResults: null
+	,displayHeader: null
+	,handler: null
+	,aggregator: null
+	,newline: null
+	,indent: null
+	,setHandler: function(handler) {
 		this.handler = handler;
 	}
+	,startTime: null
 	,start: function(e) {
 		this.startTime = this.getTime();
 	}
@@ -2895,6 +4269,7 @@ utest_ui_text_PlainTextReport.prototype = {
 		buf.b += Std.string("results: " + (result.stats.isOk ? "ALL TESTS OK (success: true)" : "SOME TESTS FAILURES (success: false)"));
 		buf.b += Std.string(this.newline);
 	}
+	,result: null
 	,getResults: function() {
 		var buf = new StringBuf();
 		this.addHeader(buf,this.result);
@@ -3056,6 +4431,24 @@ utest_utils_AccessoriesUtils.getTeardownClass = function(accessories) {
 		return accessories.teardownClass;
 	}
 };
+var utest_utils_AsyncUtils = function() { };
+utest_utils_AsyncUtils.__name__ = "utest.utils.AsyncUtils";
+utest_utils_AsyncUtils.orResolved = function(_async) {
+	if(_async == null) {
+		return utest_Async.getResolved();
+	} else {
+		return _async;
+	}
+};
+var utest_utils_Print = function() { };
+utest_utils_Print.__name__ = "utest.utils.Print";
+utest_utils_Print.immediately = function(msg) {
+	console.log(msg);
+};
+utest_utils_Print.startCase = function(caseName) {
+};
+utest_utils_Print.startTest = function(name) {
+};
 function $getIterator(o) { if( o instanceof Array ) return new haxe_iterators_ArrayIterator(o); else return o.iterator(); }
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $global.$haxeUID++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = m.bind(o); o.hx__closures__[m.__id__] = f; } return f; }
 $global.$haxeUID |= 0;
@@ -3065,6 +4458,8 @@ if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : 
 Object.defineProperty(String.prototype,"__class__",{ value : String, enumerable : false, writable : true});
 String.__name__ = "String";
 Array.__name__ = "Array";
+Date.prototype.__class__ = Date;
+Date.__name__ = "Date";
 var Int = { };
 var Dynamic = { };
 var Float = Number;
@@ -3075,6 +4470,13 @@ js_Boot.__toStr = ({ }).toString;
 Main.nextNumber = 0;
 Main.accumulated = 0;
 coro_Primitive.suspended = new coro_Primitive();
+coro_Primitive.undecided = new coro_Primitive();
+coro_Primitive.resumed = new coro_Primitive();
+utest_AccessoryName.SETUP_NAME = "setup";
+utest_AccessoryName.SETUP_CLASS_NAME = "setupClass";
+utest_AccessoryName.TEARDOWN_NAME = "teardown";
+utest_AccessoryName.TEARDOWN_CLASS_NAME = "teardownClass";
+utest_TestHandler.POLLING_TIME = 10;
 Main.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 

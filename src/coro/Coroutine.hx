@@ -1,8 +1,5 @@
 package coro;
 
-import coro.schedulers.IScheduler;
-import coro.schedulers.EventLoopScheduler;
-import sys.thread.Thread;
 import sys.thread.Mutex;
 import haxe.Exception;
 

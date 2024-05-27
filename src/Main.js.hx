@@ -82,6 +82,12 @@ class Main extends Test {
 		return accumulated;
 	}
 
+	@:suspend static function coroParameter(c:coro.Coroutine<()->Int>):Int {
+		trace('before');
+
+		return c.start();
+	}
+
 	function new() {
 		super();
 	}
@@ -127,6 +133,17 @@ class Main extends Test {
 		CoroutineIntrinsics.create(cooperativeCancellation, cont).resume(null, null);
 		
 		js.Node.setTimeout(cont.cancel, 100);
+	}
+
+	function test_coro_param(async:Async) {
+		final cont = new CallbackContinuation(new NodeScheduler(), (result, error) -> {
+			Assert.isNull(error);
+			Assert.equals(result, 1);
+
+			async.done();
+		});
+
+		CoroutineIntrinsics.create(coroParameter, new HxCoro_getNumber(null), cont).resume(null, null);
 	}
 
 	static function main() {
