@@ -38,114 +38,9 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
     };
 }
 
-function buildClass(className:String, funcName:String, fun:Function):TypeDefinition {
+function buildClasses(className:String, funcName:String, fun:Function):Array<TypeDefinition> {
     final owningClass = Context.getLocalClass().get().module;
-    final args        = {
-        var idx = 0;
-
-        fun.args.map(arg -> macro $i{ '_hx_arg${ idx++ }' });
-    }
-
-    args.push(macro this);
-
-    final extended:TypePath = {
-        pack   : [ 'coro' ],
-        name   : 'Coroutine',
-        sub    : 'Coroutine${ fun.args.length }',
-        params : fun.args.map(arg -> TPType(arg.type))
-    };
-
-    extended.params.push(TPType(fun.ret));
-
-    final definition = macro class $className implements coro.IContinuation<Any> {
-        public final _hx_completion:coro.IContinuation<Any>;
-        public final _hx_context:coro.CoroutineContext;
-
-        public var _hx_state:Int;
-        public var _hx_result:Any;
-        public var _hx_error:haxe.Exception;
-
-        public function resume(result:Any, error:haxe.Exception) {
-            _hx_result = result;
-            _hx_error  = error;
-
-            _hx_context.scheduler.schedule(() -> {
-                try {
-                    final result = @:privateAccess $i{ owningClass }.$funcName($a{ args });
-
-                    if (result is coro.Primitive) {
-                        return;
-                    }
-
-                    _hx_completion.resume(result, null);
-                } catch (exn:haxe.Exception) {
-                    _hx_completion.resume(null, exn);
-                }
-            });
-        }
-    };
-
-    var idx = 0;
-    for (arg in fun.args) {
-        definition.fields.push({
-            name   : '_hx_arg${ idx++ }',
-            pos    : Context.currentPos(),
-            access : [ APublic ],
-            kind   : FVar(arg.type, arg.value)
-        });
-    }
-
-    definition.fields.push({
-        name   : 'new',
-        pos    : Context.currentPos(),
-        access : [ APublic ],
-        kind   : FFun({
-            args: {
-                final args = new Array<FunctionArg>();
-
-                var idx = 0;
-                for (arg in fun.args) {
-                    args.push({
-                        name: 'arg${ idx++ }',
-                        type: arg.type,
-                    });
-                }
-
-                args.push({ name: 'completion' });
-
-                args;
-            },
-            expr: {
-                final args = new Array<Expr>();
-
-                var idx = 0;
-                for (arg in fun.args) {
-                    args.push(macro $i{ '_hx_arg$idx' } = $i{ 'arg$idx' });
-
-                    idx++;
-                }
-
-                macro {
-                    _hx_completion = completion;
-                    _hx_context    = if (completion == null) null else completion._hx_context;
-                    _hx_state      = 0;
-                    _hx_result     = null;
-                    _hx_error      = null;
-
-                    @:mergeBlock $b{ args }
-                }
-            }
-        })
-    });
-
-    definition.kind = switch definition.kind {
-        case TDClass(superClass, interfaces, isInterface, isFinal, isAbstract):
-            TDClass(extended, interfaces, isInterface, isFinal, isAbstract);
-        case _:
-            definition.kind;
-    }
-
-    final coroArgs = fun.args.mapi((idx, arg) -> ({
+    final coroArgs    = fun.args.mapi((idx, arg) -> ({
         name : 'arg$idx',
         type : arg.type
     } : FunctionArg));
@@ -155,8 +50,122 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
         type : macro : coro.IContinuation<Any>
     });
 
-    {
-        final tp = {
+    final continuation = {
+        final args = {
+            var idx = 0;
+    
+            fun.args.map(arg -> macro $i{ '_hx_arg${ idx++ }' });
+        }
+    
+        args.push(macro this);
+
+        final definition = macro class $className implements coro.IContinuation<Any> {
+            public final _hx_completion:coro.IContinuation<Any>;
+            public final _hx_context:coro.CoroutineContext;
+    
+            public var _hx_state:Int;
+            public var _hx_result:Any;
+            public var _hx_error:haxe.Exception;
+    
+            public function resume(result:Any, error:haxe.Exception) {
+                _hx_result = result;
+                _hx_error  = error;
+    
+                _hx_context.scheduler.schedule(() -> {
+                    try {
+                        final result = @:privateAccess $i{ owningClass }.$funcName($a{ args });
+    
+                        if (result is coro.Primitive) {
+                            return;
+                        }
+    
+                        _hx_completion.resume(result, null);
+                    } catch (exn:haxe.Exception) {
+                        _hx_completion.resume(null, exn);
+                    }
+                });
+            }
+        };
+
+        var idx = 0;
+        for (arg in fun.args) {
+            definition.fields.push({
+                name   : '_hx_arg${ idx++ }',
+                pos    : Context.currentPos(),
+                access : [ APublic ],
+                kind   : FVar(arg.type, arg.value)
+            });
+        }
+
+        definition.fields.push({
+            name   : 'new',
+            pos    : Context.currentPos(),
+            access : [ APublic ],
+            kind   : FFun({
+                args: {
+                    final args = new Array<FunctionArg>();
+
+                    var idx = 0;
+                    for (arg in fun.args) {
+                        args.push({
+                            name: 'arg${ idx++ }',
+                            type: arg.type,
+                        });
+                    }
+
+                    args.push({ name: 'completion' });
+
+                    args;
+                },
+                expr: {
+                    final args = new Array<Expr>();
+
+                    var idx = 0;
+                    for (arg in fun.args) {
+                        args.push(macro $i{ '_hx_arg$idx' } = $i{ 'arg$idx' });
+
+                        idx++;
+                    }
+
+                    macro {
+                        _hx_completion = completion;
+                        _hx_context    = if (completion == null) null else completion._hx_context;
+                        _hx_state      = 0;
+                        _hx_result     = null;
+                        _hx_error      = null;
+
+                        @:mergeBlock $b{ args }
+                    }
+                }
+            })
+        });
+
+        definition;
+    }
+
+    final factory = {
+        final factoryName = className+'Factory';
+        final factoryTp   = {
+            pack: [],
+            name: factoryName
+        }
+        final extended    = {
+            pack   : [ 'coro' ],
+            name   : 'Coroutine',
+            sub    : 'Coroutine${ fun.args.length }',
+            params : fun.args.map(arg -> TPType(arg.type))
+        };
+    
+        extended.params.push(TPType(fun.ret));
+
+        final extendexCt = TPath(extended);
+        final definition = macro class $factoryName extends $extended {
+            public static final instance : $extendexCt = new $factoryTp();
+
+            private function new() {}
+        };
+
+        final classTp = {
             pack: [],
             name: className
         };
@@ -169,28 +178,31 @@ function buildClass(className:String, funcName:String, fun:Function):TypeDefinit
                 args : coroArgs,
                 ret  : macro: coro.IContinuation<Any>,
                 expr : macro {
-                    return new $tp($a{ coroArgs.map(a -> macro $i{ a.name }) });
+                    return new $classTp($a{ coroArgs.map(a -> macro $i{ a.name }) });
                 }
             }),
         });
+    
+        definition.fields.push({
+            name   : 'start',
+            pos    : definition.pos,
+            access : [ APublic ],
+            kind   : FFun({
+                args : coroArgs,
+                ret  : macro: Any,
+                expr : macro {
+                    return @:privateAccess $i{ owningClass }.$funcName($a{ coroArgs.map(a -> macro $i{ a.name }) });
+                }
+            }),
+        });
+
+        definition;
     }
 
-    definition.fields.push({
-        name   : 'start',
-        pos    : definition.pos,
-        access : [ APublic ],
-        kind   : FFun({
-            args : coroArgs,
-            ret  : macro: Any,
-            expr : macro {
-                return @:privateAccess $i{ owningClass }.$funcName($a{ coroArgs.map(a -> macro $i{ a.name }) });
-            }
-        }),
-    });
+    trace(new Printer().printTypeDefinition(continuation));
+    trace(new Printer().printTypeDefinition(factory));
 
-    trace(new Printer().printTypeDefinition(definition));
-
-    return definition;
+    return [ continuation, factory ];
 }
 
 function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun:Function) {
@@ -351,7 +363,6 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun
             loop(bbRoot);
 
             final className   = 'HxCoro_${ funcName }';
-            final clazz       = buildClass(className, funcName, fun);
             final typePath    = { pack: [], name: className };
             final complexType = TPath(typePath);
             final eswitch     = {
@@ -359,7 +370,9 @@ function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun
                 expr: ESwitch(macro _hx_continuation._hx_state, cases, macro throw new haxe.Exception("Invalid state"))
             };
 
-            Context.defineType(clazz);
+            for (clazz in buildClasses(className, funcName, fun)) {
+                Context.defineType(clazz);
+            }
 
             final args = fun.args.map(a -> macro $i{ a.name });
             args.push(macro $i{ '_hx_completion' });

@@ -143,7 +143,7 @@ class Main extends Test {
 			async.done();
 		});
 
-		CoroutineIntrinsics.create(coroParameter, new HxCoro_getNumber(null), cont).resume(null, null);
+		CoroutineIntrinsics.create(coroParameter, HxCoro_getNumberFactory.instance, cont).resume(null, null);
 	}
 
 	static function main() {

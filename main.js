@@ -23,21 +23,6 @@ EReg.prototype = {
 	}
 	,__class__: EReg
 };
-var coro_Coroutine = function() { };
-coro_Coroutine.__name__ = "coro.Coroutine";
-coro_Coroutine.suspend = function(func,_hx_completion) {
-	var safe = new coro__$Coroutine_SafeContinuation(_hx_completion);
-	func(safe);
-	return safe.getOrThrow();
-};
-var coro_Coroutine0 = function() { };
-coro_Coroutine0.__name__ = "coro.Coroutine0";
-coro_Coroutine0.__super__ = coro_Coroutine;
-coro_Coroutine0.prototype = $extend(coro_Coroutine.prototype,{
-	create: null
-	,start: null
-	,__class__: coro_Coroutine0
-});
 var coro_IContinuation = function() { };
 coro_IContinuation.__name__ = "coro.IContinuation";
 coro_IContinuation.__isInterface__ = true;
@@ -55,8 +40,7 @@ var HxCoro_$cancellationTesting = function(completion) {
 };
 HxCoro_$cancellationTesting.__name__ = "HxCoro_cancellationTesting";
 HxCoro_$cancellationTesting.__interfaces__ = [coro_IContinuation];
-HxCoro_$cancellationTesting.__super__ = coro_Coroutine0;
-HxCoro_$cancellationTesting.prototype = $extend(coro_Coroutine0.prototype,{
+HxCoro_$cancellationTesting.prototype = {
 	_hx_completion: null
 	,_hx_context: null
 	,_hx_state: null
@@ -79,13 +63,35 @@ HxCoro_$cancellationTesting.prototype = $extend(coro_Coroutine0.prototype,{
 			}
 		});
 	}
-	,create: function(completion) {
+	,__class__: HxCoro_$cancellationTesting
+};
+var coro_Coroutine = function() { };
+coro_Coroutine.__name__ = "coro.Coroutine";
+coro_Coroutine.suspend = function(func,_hx_completion) {
+	var safe = new coro__$Coroutine_SafeContinuation(_hx_completion);
+	func(safe);
+	return safe.getOrThrow();
+};
+var coro_Coroutine0 = function() { };
+coro_Coroutine0.__name__ = "coro.Coroutine0";
+coro_Coroutine0.__super__ = coro_Coroutine;
+coro_Coroutine0.prototype = $extend(coro_Coroutine.prototype,{
+	create: null
+	,start: null
+	,__class__: coro_Coroutine0
+});
+var HxCoro_$cancellationTestingFactory = function() {
+};
+HxCoro_$cancellationTestingFactory.__name__ = "HxCoro_cancellationTestingFactory";
+HxCoro_$cancellationTestingFactory.__super__ = coro_Coroutine0;
+HxCoro_$cancellationTestingFactory.prototype = $extend(coro_Coroutine0.prototype,{
+	create: function(completion) {
 		return new HxCoro_$cancellationTesting(completion);
 	}
 	,start: function(completion) {
 		return Main.cancellationTesting(completion);
 	}
-	,__class__: HxCoro_$cancellationTesting
+	,__class__: HxCoro_$cancellationTestingFactory
 });
 var HxCoro_$cooperativeCancellation = function(completion) {
 	this._hx_completion = completion;
@@ -96,8 +102,7 @@ var HxCoro_$cooperativeCancellation = function(completion) {
 };
 HxCoro_$cooperativeCancellation.__name__ = "HxCoro_cooperativeCancellation";
 HxCoro_$cooperativeCancellation.__interfaces__ = [coro_IContinuation];
-HxCoro_$cooperativeCancellation.__super__ = coro_Coroutine0;
-HxCoro_$cooperativeCancellation.prototype = $extend(coro_Coroutine0.prototype,{
+HxCoro_$cooperativeCancellation.prototype = {
 	_hx_completion: null
 	,_hx_context: null
 	,_hx_state: null
@@ -120,21 +125,20 @@ HxCoro_$cooperativeCancellation.prototype = $extend(coro_Coroutine0.prototype,{
 			}
 		});
 	}
-	,create: function(completion) {
+	,__class__: HxCoro_$cooperativeCancellation
+};
+var HxCoro_$cooperativeCancellationFactory = function() {
+};
+HxCoro_$cooperativeCancellationFactory.__name__ = "HxCoro_cooperativeCancellationFactory";
+HxCoro_$cooperativeCancellationFactory.__super__ = coro_Coroutine0;
+HxCoro_$cooperativeCancellationFactory.prototype = $extend(coro_Coroutine0.prototype,{
+	create: function(completion) {
 		return new HxCoro_$cooperativeCancellation(completion);
 	}
 	,start: function(completion) {
 		return Main.cooperativeCancellation(completion);
 	}
-	,__class__: HxCoro_$cooperativeCancellation
-});
-var coro_Coroutine1 = function() { };
-coro_Coroutine1.__name__ = "coro.Coroutine1";
-coro_Coroutine1.__super__ = coro_Coroutine;
-coro_Coroutine1.prototype = $extend(coro_Coroutine.prototype,{
-	create: null
-	,start: null
-	,__class__: coro_Coroutine1
+	,__class__: HxCoro_$cooperativeCancellationFactory
 });
 var HxCoro_$coroParameter = function(arg0,completion) {
 	this._hx_completion = completion;
@@ -146,8 +150,7 @@ var HxCoro_$coroParameter = function(arg0,completion) {
 };
 HxCoro_$coroParameter.__name__ = "HxCoro_coroParameter";
 HxCoro_$coroParameter.__interfaces__ = [coro_IContinuation];
-HxCoro_$coroParameter.__super__ = coro_Coroutine1;
-HxCoro_$coroParameter.prototype = $extend(coro_Coroutine1.prototype,{
+HxCoro_$coroParameter.prototype = {
 	_hx_completion: null
 	,_hx_context: null
 	,_hx_state: null
@@ -171,13 +174,28 @@ HxCoro_$coroParameter.prototype = $extend(coro_Coroutine1.prototype,{
 		});
 	}
 	,_hx_arg0: null
-	,create: function(arg0,completion) {
+	,__class__: HxCoro_$coroParameter
+};
+var coro_Coroutine1 = function() { };
+coro_Coroutine1.__name__ = "coro.Coroutine1";
+coro_Coroutine1.__super__ = coro_Coroutine;
+coro_Coroutine1.prototype = $extend(coro_Coroutine.prototype,{
+	create: null
+	,start: null
+	,__class__: coro_Coroutine1
+});
+var HxCoro_$coroParameterFactory = function() {
+};
+HxCoro_$coroParameterFactory.__name__ = "HxCoro_coroParameterFactory";
+HxCoro_$coroParameterFactory.__super__ = coro_Coroutine1;
+HxCoro_$coroParameterFactory.prototype = $extend(coro_Coroutine1.prototype,{
+	create: function(arg0,completion) {
 		return new HxCoro_$coroParameter(arg0,completion);
 	}
 	,start: function(arg0,completion) {
 		return Main.coroParameter(arg0,completion);
 	}
-	,__class__: HxCoro_$coroParameter
+	,__class__: HxCoro_$coroParameterFactory
 });
 var HxCoro_$delay = function(arg0,completion) {
 	this._hx_completion = completion;
@@ -189,8 +207,7 @@ var HxCoro_$delay = function(arg0,completion) {
 };
 HxCoro_$delay.__name__ = "HxCoro_delay";
 HxCoro_$delay.__interfaces__ = [coro_IContinuation];
-HxCoro_$delay.__super__ = coro_Coroutine1;
-HxCoro_$delay.prototype = $extend(coro_Coroutine1.prototype,{
+HxCoro_$delay.prototype = {
 	_hx_completion: null
 	,_hx_context: null
 	,_hx_state: null
@@ -214,13 +231,20 @@ HxCoro_$delay.prototype = $extend(coro_Coroutine1.prototype,{
 		});
 	}
 	,_hx_arg0: null
-	,create: function(arg0,completion) {
+	,__class__: HxCoro_$delay
+};
+var HxCoro_$delayFactory = function() {
+};
+HxCoro_$delayFactory.__name__ = "HxCoro_delayFactory";
+HxCoro_$delayFactory.__super__ = coro_Coroutine1;
+HxCoro_$delayFactory.prototype = $extend(coro_Coroutine1.prototype,{
+	create: function(arg0,completion) {
 		return new HxCoro_$delay(arg0,completion);
 	}
 	,start: function(arg0,completion) {
 		return Main.delay(arg0,completion);
 	}
-	,__class__: HxCoro_$delay
+	,__class__: HxCoro_$delayFactory
 });
 var HxCoro_$getNumber = function(completion) {
 	this._hx_completion = completion;
@@ -231,8 +255,7 @@ var HxCoro_$getNumber = function(completion) {
 };
 HxCoro_$getNumber.__name__ = "HxCoro_getNumber";
 HxCoro_$getNumber.__interfaces__ = [coro_IContinuation];
-HxCoro_$getNumber.__super__ = coro_Coroutine0;
-HxCoro_$getNumber.prototype = $extend(coro_Coroutine0.prototype,{
+HxCoro_$getNumber.prototype = {
 	_hx_completion: null
 	,_hx_context: null
 	,_hx_state: null
@@ -255,13 +278,20 @@ HxCoro_$getNumber.prototype = $extend(coro_Coroutine0.prototype,{
 			}
 		});
 	}
-	,create: function(completion) {
+	,__class__: HxCoro_$getNumber
+};
+var HxCoro_$getNumberFactory = function() {
+};
+HxCoro_$getNumberFactory.__name__ = "HxCoro_getNumberFactory";
+HxCoro_$getNumberFactory.__super__ = coro_Coroutine0;
+HxCoro_$getNumberFactory.prototype = $extend(coro_Coroutine0.prototype,{
+	create: function(completion) {
 		return new HxCoro_$getNumber(completion);
 	}
 	,start: function(completion) {
 		return Main.getNumber(completion);
 	}
-	,__class__: HxCoro_$getNumber
+	,__class__: HxCoro_$getNumberFactory
 });
 var HxCoro_$someAsync = function(completion) {
 	this._hx_completion = completion;
@@ -272,8 +302,7 @@ var HxCoro_$someAsync = function(completion) {
 };
 HxCoro_$someAsync.__name__ = "HxCoro_someAsync";
 HxCoro_$someAsync.__interfaces__ = [coro_IContinuation];
-HxCoro_$someAsync.__super__ = coro_Coroutine0;
-HxCoro_$someAsync.prototype = $extend(coro_Coroutine0.prototype,{
+HxCoro_$someAsync.prototype = {
 	_hx_completion: null
 	,_hx_context: null
 	,_hx_state: null
@@ -296,13 +325,20 @@ HxCoro_$someAsync.prototype = $extend(coro_Coroutine0.prototype,{
 			}
 		});
 	}
-	,create: function(completion) {
+	,__class__: HxCoro_$someAsync
+};
+var HxCoro_$someAsyncFactory = function() {
+};
+HxCoro_$someAsyncFactory.__name__ = "HxCoro_someAsyncFactory";
+HxCoro_$someAsyncFactory.__super__ = coro_Coroutine0;
+HxCoro_$someAsyncFactory.prototype = $extend(coro_Coroutine0.prototype,{
+	create: function(completion) {
 		return new HxCoro_$someAsync(completion);
 	}
 	,start: function(completion) {
 		return Main.someAsync(completion);
 	}
-	,__class__: HxCoro_$someAsync
+	,__class__: HxCoro_$someAsyncFactory
 });
 var HxCoro_$write = function(arg0,completion) {
 	this._hx_completion = completion;
@@ -314,8 +350,7 @@ var HxCoro_$write = function(arg0,completion) {
 };
 HxCoro_$write.__name__ = "HxCoro_write";
 HxCoro_$write.__interfaces__ = [coro_IContinuation];
-HxCoro_$write.__super__ = coro_Coroutine1;
-HxCoro_$write.prototype = $extend(coro_Coroutine1.prototype,{
+HxCoro_$write.prototype = {
 	_hx_completion: null
 	,_hx_context: null
 	,_hx_state: null
@@ -339,13 +374,20 @@ HxCoro_$write.prototype = $extend(coro_Coroutine1.prototype,{
 		});
 	}
 	,_hx_arg0: null
-	,create: function(arg0,completion) {
+	,__class__: HxCoro_$write
+};
+var HxCoro_$writeFactory = function() {
+};
+HxCoro_$writeFactory.__name__ = "HxCoro_writeFactory";
+HxCoro_$writeFactory.__super__ = coro_Coroutine1;
+HxCoro_$writeFactory.prototype = $extend(coro_Coroutine1.prototype,{
+	create: function(arg0,completion) {
 		return new HxCoro_$write(arg0,completion);
 	}
 	,start: function(arg0,completion) {
 		return Main.write(arg0,completion);
 	}
-	,__class__: HxCoro_$write
+	,__class__: HxCoro_$writeFactory
 });
 var HxOverrides = function() { };
 HxOverrides.__name__ = "HxOverrides";
@@ -722,7 +764,7 @@ Main.prototype = $extend(utest_Test.prototype,{
 			utest_Assert.equals(result,1,null,{ fileName : "src/Main.js.hx", lineNumber : 141, className : "Main", methodName : "test_coro_param"});
 			async.done({ fileName : "src/Main.js.hx", lineNumber : 143, className : "Main", methodName : "test_coro_param"});
 		});
-		new HxCoro_$coroParameter(new HxCoro_$getNumber(null),cont).resume(null,null);
+		new HxCoro_$coroParameter(HxCoro_$getNumberFactory.instance,cont).resume(null,null);
 	}
 	,__initializeUtest__: function() {
 		var _gthis = this;
@@ -4467,6 +4509,13 @@ var Bool = Boolean;
 var Class = { };
 var Enum = { };
 js_Boot.__toStr = ({ }).toString;
+HxCoro_$cancellationTestingFactory.instance = new HxCoro_$cancellationTestingFactory();
+HxCoro_$cooperativeCancellationFactory.instance = new HxCoro_$cooperativeCancellationFactory();
+HxCoro_$coroParameterFactory.instance = new HxCoro_$coroParameterFactory();
+HxCoro_$delayFactory.instance = new HxCoro_$delayFactory();
+HxCoro_$getNumberFactory.instance = new HxCoro_$getNumberFactory();
+HxCoro_$someAsyncFactory.instance = new HxCoro_$someAsyncFactory();
+HxCoro_$writeFactory.instance = new HxCoro_$writeFactory();
 Main.nextNumber = 0;
 Main.accumulated = 0;
 coro_Primitive.suspended = new coro_Primitive();
