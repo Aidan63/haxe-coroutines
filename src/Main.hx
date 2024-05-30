@@ -92,11 +92,11 @@ class Main extends Test {
 		return accumulated;
 	}
 
-	@:suspend static function coroParameter(c:coro.Coroutine<()->Int>):Int {
-		trace('before');
+	// @:suspend static function coroParameter(c:coro.Coroutine<()->Int>):Int {
+	// 	trace('before');
 
-		return c.start();
-	}
+	// 	return c.start();
+	// }
 
 	@:suspend static function spawnThread():Void {
 		Coroutine.suspend(cont -> {
@@ -210,16 +210,16 @@ class Main extends Test {
 		CoroutineIntrinsics.create(schedulerTesting, cont).resume(null, null);
 	}
 
-	function test_coro_param(async:Async) {
-		final cont = new CallbackContinuation(new EventLoopScheduler(Thread.current().events), (result, error) -> {
-			Assert.isNull(error);
-			Assert.equals(result, 1);
+	// function test_coro_param(async:Async) {
+	// 	final cont = new CallbackContinuation(new EventLoopScheduler(Thread.current().events), (result, error) -> {
+	// 		Assert.isNull(error);
+	// 		Assert.equals(result, 1);
 
-			async.done();
-		});
+	// 		async.done();
+	// 	});
 
-		CoroutineIntrinsics.create(coroParameter, HxCoro_getNumberFactory.instance, cont).resume(null, null);
-	}
+	// 	CoroutineIntrinsics.create(coroParameter, HxCoro_getNumberFactory.instance, cont).resume(null, null);
+	// }
 
 	function test_defered() {
 		final cont  = new BlockingContinuation(new EventLoopScheduler(Thread.current().events));

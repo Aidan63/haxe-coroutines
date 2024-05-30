@@ -82,11 +82,11 @@ class Main extends Test {
 		return accumulated;
 	}
 
-	@:suspend static function coroParameter(c:coro.Coroutine<()->Int>):Int {
-		trace('before');
+	// @:suspend static function coroParameter(c:coro.Coroutine<()->Int>):Int {
+	// 	trace('before');
 
-		return c.start();
-	}
+	// 	return c.start();
+	// }
 
 	function new() {
 		super();
@@ -135,16 +135,16 @@ class Main extends Test {
 		js.Node.setTimeout(cont.cancel, 100);
 	}
 
-	function test_coro_param(async:Async) {
-		final cont = new CallbackContinuation(new NodeScheduler(), (result, error) -> {
-			Assert.isNull(error);
-			Assert.equals(result, 1);
+	// function test_coro_param(async:Async) {
+	// 	final cont = new CallbackContinuation(new NodeScheduler(), (result, error) -> {
+	// 		Assert.isNull(error);
+	// 		Assert.equals(result, 1);
 
-			async.done();
-		});
+	// 		async.done();
+	// 	});
 
-		CoroutineIntrinsics.create(coroParameter, HxCoro_getNumberFactory.instance, cont).resume(null, null);
-	}
+	// 	CoroutineIntrinsics.create(coroParameter, getNumber, cont).resume(null, null);
+	// }
 
 	static function main() {
 		utest.UTest.run([ new Main() ]);

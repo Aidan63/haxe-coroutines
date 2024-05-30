@@ -19,9 +19,9 @@ function doTransform(funcName:String, fun:Function, pos:Position, found:Array<St
             case TPath({ name: 'Coroutine', pack: [ 'coro' ], params: [ TPType(TFunction(fArgs, fRet)) ] }):
 
                 final copy = fArgs.copy();
-                copy.push(fRet);
+                copy.push(macro: coro.Coroutine<Any>);
 
-                arg.type = TPath({ name: 'Coroutine', sub: 'Coroutine${ fArgs.length }', pack: [ 'coro' ], params: copy.map(t -> TPType(t)) });
+                arg.type = TFunction(copy, macro: Any);
                 arg;
             case _:
                 arg;
@@ -143,66 +143,9 @@ function buildClasses(className:String, funcName:String, fun:Function):Array<Typ
         definition;
     }
 
-    final factory = {
-        final factoryName = className+'Factory';
-        final factoryTp   = {
-            pack: [],
-            name: factoryName
-        }
-        final extended    = {
-            pack   : [ 'coro' ],
-            name   : 'Coroutine',
-            sub    : 'Coroutine${ fun.args.length }',
-            params : fun.args.map(arg -> TPType(arg.type))
-        };
-    
-        extended.params.push(TPType(fun.ret));
-
-        final extendexCt = TPath(extended);
-        final definition = macro class $factoryName extends $extended {
-            public static final instance : $extendexCt = new $factoryTp();
-
-            private function new() {}
-        };
-
-        final classTp = {
-            pack: [],
-            name: className
-        };
-        
-        definition.fields.push({
-            name   : 'create',
-            pos    : definition.pos,
-            access : [ APublic ],
-            kind   : FFun({
-                args : coroArgs,
-                ret  : macro: coro.IContinuation<Any>,
-                expr : macro {
-                    return new $classTp($a{ coroArgs.map(a -> macro $i{ a.name }) });
-                }
-            }),
-        });
-    
-        definition.fields.push({
-            name   : 'start',
-            pos    : definition.pos,
-            access : [ APublic ],
-            kind   : FFun({
-                args : coroArgs,
-                ret  : macro: Any,
-                expr : macro {
-                    return @:privateAccess $i{ owningClass }.$funcName($a{ coroArgs.map(a -> macro $i{ a.name }) });
-                }
-            }),
-        });
-
-        definition;
-    }
-
     trace(new Printer().printTypeDefinition(continuation));
-    trace(new Printer().printTypeDefinition(factory));
 
-    return [ continuation, factory ];
+    return [ continuation ];
 }
 
 function buildStateMachine(bbRoot:BasicBlock, pos:Position, funcName:String, fun:Function) {
