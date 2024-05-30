@@ -1,3 +1,4 @@
+import coro.Primitive;
 import sys.thread.Thread;
 import sys.thread.EventLoop;
 import coro.Coroutine;
@@ -220,6 +221,17 @@ class Main extends Test {
 		CoroutineIntrinsics.create(coroParameter, HxCoro_getNumberFactory.instance, cont).resume(null, null);
 	}
 
+	function test_defered() {
+		final cont  = new BlockingContinuation(new EventLoopScheduler(Thread.current().events));
+		final defer = new Defer(getNumber, cont);
+
+		Assert.equals(0, nextNumber);
+
+		defer.resume(null, null);
+
+		Assert.equals(1, cont.wait());
+	}
+
 	static function main() {
 		utest.UTest.run([ new Main() ]);
 	}
@@ -285,5 +297,32 @@ private class BlockingContinuation implements IContinuation<Any> {
 
 	public function cancel() {
 		source.cancel();
+	}
+}
+
+private class Defer implements IContinuation<Any> {
+	final lambda : IContinuation<Any>->Any;
+
+	final continuation : IContinuation<Any>;
+
+	public final _hx_context:CoroutineContext;
+
+	public function new(lambda, continuation) {
+		this.lambda       = lambda;
+		this.continuation = continuation;
+		this._hx_context  = continuation._hx_context;
+	}
+
+	public function resume(_:Any, _:Exception) {
+		try {
+			final result = lambda(continuation);
+			if (result is Primitive) {
+				return;
+			}
+
+			continuation.resume(result, null);
+		} catch (exn) {
+			continuation.resume(null, exn);
+		}
 	}
 }
